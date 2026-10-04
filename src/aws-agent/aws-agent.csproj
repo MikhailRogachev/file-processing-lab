@@ -1,0 +1,22 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <RootNamespace>aws_agent</RootNamespace>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="AWSSDK.S3" Version="4.0.103.3" />
+    <PackageReference Include="AWSSDK.SQS" Version="4.0.100.14" />
+    <PackageReference Include="Microsoft.Extensions.Hosting" Version="9.0.20" />
+    <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="9.0.20" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\data\data.csproj" />
+    <ProjectReference Include="..\domain\domain.csproj" />
+  </ItemGroup>
+
+</Project>

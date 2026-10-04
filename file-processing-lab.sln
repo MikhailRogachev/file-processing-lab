@@ -1,0 +1,60 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.14.37614.0
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "domain", "src\domain\domain.csproj", "{994EAD24-C370-446C-8C28-3187D9BE53CE}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "data", "src\data\data.csproj", "{E3B6E67D-3335-4AC0-8759-856B99CB6310}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "api", "src\api\api.csproj", "{F6441659-2AAD-48B6-9DB8-E1060F99B825}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "infrastructure", "src\infrastructure\infrastructure.csproj", "{B5AD8BEA-6737-4F1F-95F9-AAD56ED80963}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "aws-agent", "src\aws-agent\aws-agent.csproj", "{569FED73-AEA8-47AA-9432-E305B893D3AC}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "install", "install", "{02EA681E-C7D8-13C7-8484-4AC65E1B71E8}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "floci-management", "install\aws_floci\floci-management\floci-management.csproj", "{9AB18E60-5EB6-413D-9659-A01E38144C7E}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{994EAD24-C370-446C-8C28-3187D9BE53CE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{994EAD24-C370-446C-8C28-3187D9BE53CE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{994EAD24-C370-446C-8C28-3187D9BE53CE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{994EAD24-C370-446C-8C28-3187D9BE53CE}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E3B6E67D-3335-4AC0-8759-856B99CB6310}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E3B6E67D-3335-4AC0-8759-856B99CB6310}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E3B6E67D-3335-4AC0-8759-856B99CB6310}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E3B6E67D-3335-4AC0-8759-856B99CB6310}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F6441659-2AAD-48B6-9DB8-E1060F99B825}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F6441659-2AAD-48B6-9DB8-E1060F99B825}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F6441659-2AAD-48B6-9DB8-E1060F99B825}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F6441659-2AAD-48B6-9DB8-E1060F99B825}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B5AD8BEA-6737-4F1F-95F9-AAD56ED80963}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B5AD8BEA-6737-4F1F-95F9-AAD56ED80963}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B5AD8BEA-6737-4F1F-95F9-AAD56ED80963}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B5AD8BEA-6737-4F1F-95F9-AAD56ED80963}.Release|Any CPU.Build.0 = Release|Any CPU
+		{569FED73-AEA8-47AA-9432-E305B893D3AC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{569FED73-AEA8-47AA-9432-E305B893D3AC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{569FED73-AEA8-47AA-9432-E305B893D3AC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{569FED73-AEA8-47AA-9432-E305B893D3AC}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9AB18E60-5EB6-413D-9659-A01E38144C7E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9AB18E60-5EB6-413D-9659-A01E38144C7E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9AB18E60-5EB6-413D-9659-A01E38144C7E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9AB18E60-5EB6-413D-9659-A01E38144C7E}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{9AB18E60-5EB6-413D-9659-A01E38144C7E} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {17749BB4-F21C-436F-8A85-5F9057F7F4D9}
+	EndGlobalSection
+EndGlobal

@@ -1,0 +1,36 @@
+erDiagram
+    MediaAssets ||--o{ Jobs : "содержит (1 ко многим)"
+    Jobs ||--o{ JobStages : "состоит из этапов"
+    JobStages ||--o{ JobTasks : "содержит задачи"
+    JobTasks ||--o{ JobTasks : "родитель/потомок (до 4 уровней)"
+
+    MediaAssets {
+        uuid Id PK
+        string BaseName "Уникальный ключ корреляции"
+        datetime CreationDate
+    }
+
+    Jobs {
+        uuid Id PK
+        uuid MediaAssetId FK
+        int JobType "Видео или Субтитры"
+        string Filename
+        int State
+        datetime CreationDate
+    }
+
+    JobStages {
+        uuid Id PK
+        uuid JobId FK
+        int StageType "Preprocess, Process, Postprocess"
+        int State
+        float Progress
+    }
+
+    JobTasks {
+        uuid Id PK
+        uuid JobStageId FK
+        uuid ParentId FK "Для вложенных задач"
+        string Name
+        int State
+    }

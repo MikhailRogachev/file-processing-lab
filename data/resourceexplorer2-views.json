@@ -1,0 +1,14 @@
+{
+  "000000000000/arn:aws:resource-explorer-2:us-east-1:000000000000:view/default-view/d5430c35-439b-46e2-a99f-09a25ede973c" : {
+    "viewArn" : "arn:aws:resource-explorer-2:us-east-1:000000000000:view/default-view/d5430c35-439b-46e2-a99f-09a25ede973c",
+    "viewName" : "default-view",
+    "owner" : "000000000000",
+    "scope" : "arn:aws:iam::000000000000:root",
+    "filters" : null,
+    "includedProperties" : [ {
+      "name" : "tags"
+    } ],
+    "tags" : { },
+    "lastUpdatedAt" : "2026-09-23T07:45:51.949967997Z"
+  }
+}

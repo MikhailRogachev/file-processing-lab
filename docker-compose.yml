@@ -1,0 +1,87 @@
+services:
+  rabbitmq:
+    image: rabbitmq:3-management-alpine
+    container_name: rabbitmq_brocker
+    environment:
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+    restart: unless-stopped
+
+  postgres:
+    image: postgres:16-alpine
+    container_name: postgres_db
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: fileprocessingDb
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    restart: unless-stopped
+
+  floci:
+    image: floci/floci:latest
+    container_name: floci
+    ports:
+      - "4566:4566"
+    environment:
+      - AWS_ENDPOINT_URL=http://127.0.0.1:4566
+      - AWS_ACCESS_KEY_ID=test
+      - AWS_SECRET_ACCESS_KEY=test
+      - AWS_DEFAULT_REGION=us-east-1
+      - FLOCI_SERVICES_S3_ENABLED=true
+      - FLOCI_SERVICES_SQS_ENABLED=true
+    volumes:
+      - ./data:/app/data
+    restart: unless-stopped
+
+  init-aws:
+    image: amazon/aws-cli
+    container_name: init_aws_resources
+    environment:
+      - AWS_ACCESS_KEY_ID=test
+      - AWS_SECRET_ACCESS_KEY=test
+      - AWS_DEFAULT_REGION=us-east-1
+    entrypoint: [ "/bin/sh", "-c" ]  
+    command:
+      - |
+        echo 'Waiting for Floci (4566)...'
+        until aws --endpoint-url=http://floci:4566 s3 ls > /dev/null 2>&1; do
+          echo 'Floci is not ready yet, next try in 1 sec...'
+          sleep 1
+        done
+        echo 'Floci is ready! Creating Resources...'
+
+        # 1. Creating the bucket
+        echo '1. Create Bucket'
+        aws s3 mb s3://file-processing-bucket --endpoint-url http://floci:4566
+
+        # 2. Create SQS queue
+        echo 'Create SQS queue'
+        aws --endpoint-url=http://floci:4566 sqs create-queue --queue-name s3-file-events-queue
+
+        # 3. Binding
+        echo "Set Notification S3 -> SQS..."
+        aws --endpoint-url=http://floci:4566 s3api put-bucket-notification-configuration \
+          --bucket file-processing-bucket \
+          --notification-configuration '{"QueueConfigurations": [{"QueueArn": "arn:aws:sqs:us-east-1:000000000000:s3-file-events-queue", "Events": ["s3:ObjectCreated:*", "s3:ObjectRemoved:*"]}]}'
+
+        echo "Initialization is completed!"
+    depends_on:
+      - floci   
+
+volumes:
+  postgres_data:
+  rabbitmq_data:
+  data:
+
+networks:
+  app-net:
+      driver: aws-bridge  
+    
