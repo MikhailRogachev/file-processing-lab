@@ -1,14 +1,9 @@
-using Amazon.SQS;
 using api.Extensions;
-using aws_agent.Options;
-using aws_agent.Services;
-using data.Config;
+using aws_agent.Extensions;
 using data.Context;
 using data.Services;
 using domain.Interfaces.data;
-using domain.Interfaces.Messaging;
 using domain.Interfaces.Outbox;
-using floci_management.BackgroundServices;
 using infrastructure.Oprions;
 using Microsoft.EntityFrameworkCore;
 
@@ -16,24 +11,20 @@ var builder = WebApplication.CreateBuilder(args);
 var configuration = builder.Configuration!;
 var services = builder.Services;
 
-// Add services to the container.
-var connString = configuration.GetSection(nameof(DatabaseConfig)).Get<DatabaseConfig>()!.BuildNpgsqlConnectionString();
-
-// Data context
-services.AddDbContext<AppDbContext>(opt => opt.UseNpgsql(connString));
+// With SQL Server registration:
+builder.Services.AddDbContext<AppDbContext>(options =>
+    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 // Get options
-services.AddOptions<AwsOptions>().Bind(configuration.GetSection(nameof(AwsOptions)));
 services.AddOptions<OutboxMessageOptions>().Bind(configuration.GetSection(nameof(OutboxMessageOptions)));
 
 // Services
-services.AddScoped<IMessageConsumer<AmazonSQSClient>, SqsMessageConsumer>();
 services.AddScoped<IMediaFileValidator, MediaFileValidator>();
 services.AddScoped<IOutboxMessageBuilderService, OutboxMessageBuildService>();
 services.AddScoped<IUnitOfWork, AppDbContext>();
 
-// Background services
-services.AddHostedService<SqsListener>();
+// aws consumer
+services.AwsServicesInjection(configuration);
 
 services.AddControllers();
 services.AddEndpointsApiExplorer();

@@ -3,6 +3,7 @@
 public enum CommandStatus
 {
     Created,
+    Queued,
     Running,
     Completed,
     Failed

@@ -17,6 +17,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "install", "install", "{02EA
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "floci-management", "install\aws_floci\floci-management\floci-management.csproj", "{9AB18E60-5EB6-413D-9659-A01E38144C7E}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "aws-file-validation", "install\lab\aws-file-validation\aws-file-validation.csproj", "{4ECEB4AC-BA2A-46B2-826E-9DBB60691BFC}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -47,12 +49,17 @@ Global
 		{9AB18E60-5EB6-413D-9659-A01E38144C7E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{9AB18E60-5EB6-413D-9659-A01E38144C7E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{9AB18E60-5EB6-413D-9659-A01E38144C7E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4ECEB4AC-BA2A-46B2-826E-9DBB60691BFC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4ECEB4AC-BA2A-46B2-826E-9DBB60691BFC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4ECEB4AC-BA2A-46B2-826E-9DBB60691BFC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4ECEB4AC-BA2A-46B2-826E-9DBB60691BFC}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{9AB18E60-5EB6-413D-9659-A01E38144C7E} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
+		{4ECEB4AC-BA2A-46B2-826E-9DBB60691BFC} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {17749BB4-F21C-436F-8A85-5F9057F7F4D9}
