@@ -1,9 +1,7 @@
 ﻿using data.Context;
-using domain.Interfaces.data;
 using domain.Interfaces.Validators;
-using domain.Models.Jobs;
 
-namespace floci_management.BackgroundServices;
+namespace aws_agent.Services;
 
 public class SqsListener(
     ILogger<SqsListener> logger,
@@ -39,17 +37,17 @@ public class SqsListener(
                         if (!await validator.ValidateMediaFileAsync(message.ObjectKey, stoppingToken))
                         {
                             logger.LogWarning("The file {key} is not allowed to processing.", message.ObjectKey);
-                            await service.RemoveMassagesAsync(messages, stoppingToken);
+                            await service.RemoveMessagesAsync(messages, stoppingToken);
 
                             continue;
                         }
 
-                        var mediaFileEntity = new MediaAsset(message.ObjectKey);
+                        //var mediaFileEntity = new MediaAsset(message.ObjectKey);
 
-                        context.MediaAssets.Add(mediaFileEntity);
-                        await (context as IUnitOfWork).SaveAsync(stoppingToken);
+                        //context.MediaAssets.Add(mediaFileEntity);
+                        //await (context as IUnitOfWork).SaveAsync(stoppingToken);
 
-                        await service.RemoveMassagesAsync(messages, stoppingToken);
+                        await service.RemoveMessagesAsync(messages, stoppingToken);
                     }
 
                 }

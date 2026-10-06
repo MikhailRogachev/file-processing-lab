@@ -5,11 +5,10 @@ namespace domain.Events;
 public class BaseEvent : IEvent
 {
     public Guid Id { get; set; }
-    public DateTime CreatedAt { get; set; }
+    public DateTimeOffset CreatedAt { get; set; } = DateTimeOffset.Now;
 
     public BaseEvent()
     {
         Id = Guid.NewGuid();
-        CreatedAt = DateTime.UtcNow;
     }
 }

@@ -12,17 +12,15 @@ services:
       - rabbitmq_data:/var/lib/rabbitmq
     restart: unless-stopped
 
-  postgres:
-    image: postgres:16-alpine
-    container_name: postgres_db
+  sqlserver:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: mssql
     environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
-      POSTGRES_DB: fileprocessingDb
+      ACCEPT_EULA: "Y"
+      MSSQL_SA_PASSWORD: "SuperPuper1!"
+      MSSQL_PID: Developer
     ports:
-      - "5432:5432"
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - "1433:1433"
     restart: unless-stopped
 
   floci:
@@ -77,7 +75,6 @@ services:
       - floci   
 
 volumes:
-  postgres_data:
   rabbitmq_data:
   data:
 

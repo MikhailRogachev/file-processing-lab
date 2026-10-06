@@ -19,7 +19,7 @@ public class MediaFileValidator(
                 return false;
             }
 
-            var allowedExtension = await context.AllowedFileTypes.FirstOrDefaultAsync(p => p.Extension == fileExtension && p.IsActive);
+            //var allowedExtension = await context.AllowedFileTypes.FirstOrDefaultAsync(p => p.Extension == fileExtension && p.IsActive);
 
             // Check if the media file type exists in the database
             //if (!await context.AllowedFileTypes.AnyAsync(p => p.Extension == fileExtension && p.IsActive, cancellationToken) == false)
@@ -29,7 +29,7 @@ public class MediaFileValidator(
             //}
 
             //logger.LogInformation("Media file type is validated successfully: {Filename}", filename);
-            return allowedExtension != null;
+            return true; // allowedExtension != null;
 
         }
         catch (Exception ex)

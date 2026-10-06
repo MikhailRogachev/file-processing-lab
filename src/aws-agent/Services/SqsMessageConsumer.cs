@@ -1,12 +1,15 @@
 ﻿using aws_agent.Extensions;
+using domain.Extensions;
 
 namespace aws_agent.Services;
 
 public class SqsMessageConsumer(
     ILogger<SqsMessageConsumer> logger,
+    IAmazonSQS client,
     IOptions<AwsOptions> options
     ) : IMessageConsumer<AmazonSQSClient>
 {
+    private string? _cachedQueueUrl;
 
     /// <summary>
     /// Asynchronously retrieves and parses a batch of pending messages from the configured SQS queue.
@@ -27,15 +30,14 @@ public class SqsMessageConsumer(
     /// </exception>
     public async Task<IList<QueueMessageConsumed>> ReceiveMessageAsync(CancellationToken cancellationToken)
     {
-        // get sqs queue url
-        var queueUrl = await GetQueueUrlAsync();
-        var request = GetConsumeRequest(queueUrl);
-
-        logger.LogDebug("Requesting messages from the SQS queue - {queue}", queueUrl);
-
         try
         {
-            using var client = GetClient();
+            // get sqs queue url
+            var queueUrl = await GetQueueUrlAsync(cancellationToken);
+            var request = GetConsumeRequest(queueUrl);
+
+            logger.LogDebug("Requesting messages from the SQS queue - {queue}", queueUrl);
+
             var response = await client.ReceiveMessageAsync(request);
 
             if (response == null || response.HttpStatusCode != System.Net.HttpStatusCode.OK)
@@ -43,7 +45,7 @@ public class SqsMessageConsumer(
                 throw new Exception($"Error during request messages. Status code - {response?.HttpStatusCode}");
             }
 
-            if (response.Messages?.Any() == true)
+            if (!response.Messages.IsAny())
             {
                 var consumedList = new List<QueueMessageConsumed>();
 
@@ -77,21 +79,32 @@ public class SqsMessageConsumer(
     /// <exception cref="AmazonSQSException">
     /// Thrown when an error occurs while communicating with the AWS SQS service during message deletion.
     /// </exception>
-    public async Task RemoveMassagesAsync(IList<QueueMessageConsumed> messages, CancellationToken cancellationToken)
+    public async Task RemoveMessagesAsync(IList<QueueMessageConsumed> messages, CancellationToken cancellationToken)
     {
-        var queueUrl = await GetQueueUrlAsync();
+        if (!messages.IsAny())
+            return;
 
         try
         {
-            using var client = GetClient();
-
-            foreach (var message in messages)
+            var queueUrl = await GetQueueUrlAsync(cancellationToken);
+            foreach (var chunk in messages.Chunk(10))
             {
-                await client.DeleteMessageAsync(new DeleteMessageRequest
+                var deleteRequest = new DeleteMessageBatchRequest
                 {
                     QueueUrl = queueUrl,
-                    ReceiptHandle = message.ReceiptHandle
-                }, cancellationToken);
+                    Entries = chunk.Select(m => new DeleteMessageBatchRequestEntry
+                    {
+                        Id = m.MessageId ?? Guid.NewGuid().ToString(),
+                        ReceiptHandle = m.ReceiptHandle
+                    }).ToList()
+                };
+
+                var response = await client.DeleteMessageBatchAsync(deleteRequest, cancellationToken);
+
+                if (response.Failed?.Count > 0)
+                {
+                    logger.LogWarning("Failed to delete {Count} messages from SQS queue", response.Failed.Count);
+                }
             }
         }
         catch (Exception ex)
@@ -122,34 +135,43 @@ public class SqsMessageConsumer(
     }
 
     /// <summary>
-    /// Asynchronously retrieves the canonical SQS queue URL for the configured queue name.
+    /// Asynchronously retrieves and caches the canonical Amazon SQS queue URL for the configured queue name.
     /// </summary>
+    /// <remarks>
+    /// This method uses in-memory caching to store the resolved queue URL upon initial retrieval, 
+    /// avoiding redundant API calls on subsequent invocations. 
+    /// <para>
+    /// <strong>Note:</strong> The provided <paramref name="cancellationToken"/> is reserved for future signature compliance 
+    /// or downstream thread propagation; the underlying AWS S3/SQS client call in this method does not currently observe it.
+    /// </para>
+    /// </remarks>
+    /// <param name="cancellationToken">A <see cref="CancellationToken"/> to observe while waiting for the task to complete.</param>
     /// <returns>
-    /// A task representing the asynchronous operation. The task result contains the resolved queue URL <see cref="string"/>.
+    /// A task that represents the asynchronous operation. The task result contains the resolved 
+    /// SQS queue URL as a <see cref="string"/>.
     /// </returns>
-    /// <exception cref="QueueDoesNotExistException">
-    /// Thrown when the queue specified by <c>options.Value.SqsQueueName</c> does not exist on the endpoint.
+    /// <exception cref="Amazon.SQS.Model.QueueDoesNotExistException">
+    /// Thrown when the queue specified by <c>options.Value.SqsQueueName</c> does not exist on the target AWS endpoint.
     /// </exception>
-    /// <exception cref="AmazonSQSException">
-    /// Thrown when an error occurs while communicating with the AWS SQS service.
+    /// <exception cref="Amazon.SQS.AmazonSQSException">
+    /// Thrown when an error occurs while communicating with the Amazon SQS service.
     /// </exception>
-    private async Task<string> GetQueueUrlAsync()
+    /// <exception cref="System.InvalidOperationException">
+    /// Thrown when the configured queue name or AWS credentials/options are invalid or uninitialized.
+    /// </exception>
+    private async Task<string> GetQueueUrlAsync(CancellationToken cancellationToken)
     {
-        try
-        {
-            using var client = GetClient();
-            var response = await client.GetQueueUrlAsync(new GetQueueUrlRequest
-            {
-                QueueName = options.Value.SqsQueueName,
-            });
+        if (!string.IsNullOrWhiteSpace(_cachedQueueUrl))
+            return _cachedQueueUrl;
 
-            return response.QueueUrl;
-        }
-        catch (Exception ex)
+        var response = await client.GetQueueUrlAsync(new GetQueueUrlRequest
         {
-            logger.LogError(ex, "SqsMessageConsumer (GetQueueUrlAsync) error: {msg}", ex.Message);
-            throw;
-        }
+            QueueName = options.Value.SqsQueueName,
+        });
+
+        _cachedQueueUrl = response.QueueUrl;
+
+        return _cachedQueueUrl;
     }
 
     /// <summary>
@@ -167,7 +189,6 @@ public class SqsMessageConsumer(
             MaxNumberOfMessages = 1,
             MessageAttributeNames = new List<string> { "All" },
             QueueUrl = queueUrl,
-            VisibilityTimeout = 0,
             WaitTimeSeconds = 0,
         };
     }

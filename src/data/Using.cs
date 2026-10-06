@@ -2,4 +2,3 @@
 global using domain.Models.Commands;
 global using domain.Models.Jobs;
 global using domain.Models.References;
-global using Npgsql;

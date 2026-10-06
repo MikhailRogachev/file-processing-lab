@@ -23,10 +23,9 @@ public class AppDbContext : DbContext, IUnitOfWork
         _outboxMessageBuilderService = outboxMessageBuilderService;
     }
 
+    public DbSet<MediaPackage> MediaPackages => Set<MediaPackage>();
     public DbSet<MediaAsset> MediaAssets => Set<MediaAsset>();
     public DbSet<Job> Jobs => Set<Job>();
-    public DbSet<JobStage> JobStages => Set<JobStage>();
-    public DbSet<JobTask> JobTasks => Set<JobTask>();
     public DbSet<Command> Commands => Set<Command>();
     public DbSet<AllowedFileType> AllowedFileTypes => Set<AllowedFileType>();
 
@@ -34,14 +33,25 @@ public class AppDbContext : DbContext, IUnitOfWork
     {
         base.OnModelCreating(modelBuilder);
 
+        modelBuilder.Entity<MediaPackage>(entity =>
+        {
+            entity.Property(e => e.Id).ValueGeneratedNever();
+            entity.Property(e => e.Identifier).HasMaxLength(500).IsRequired();
+            entity.Property(e => e.State).HasConversion(new EnumToStringConverter<HealthState>());
+
+            entity.HasIndex(e => e.Identifier).IsUnique();
+            entity.HasMany(e => e.Assets)
+                .WithOne(j => j.MediaPackage)
+                .HasForeignKey(j => j.MediaPackageId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+
         modelBuilder.Entity<MediaAsset>(entity =>
         {
             entity.Property(e => e.Id).ValueGeneratedNever();
-            entity.Property(e => e.BaseName).HasMaxLength(800).IsRequired();
-            entity.Property(e => e.CreatedAt).HasDefaultValueSql("CURRENT_TIMESTAMP");
+            entity.Property(e => e.Filename).HasMaxLength(550).IsRequired();
 
-            entity.HasKey(e => e.Id);
-            entity.HasIndex(e => e.BaseName).IsUnique();
+            entity.HasIndex(e => new { e.MediaPackageId, e.Filename }).IsUnique();
             entity.HasMany(e => e.Jobs)
                 .WithOne(j => j.MediaAsset)
                 .HasForeignKey(j => j.MediaAssetId)
@@ -52,60 +62,28 @@ public class AppDbContext : DbContext, IUnitOfWork
         modelBuilder.Entity<Job>(entity =>
         {
             entity.Property(e => e.Id).ValueGeneratedNever();
-            entity.Property(e => e.Filename).HasMaxLength(800);
-            entity.Property(e => e.CreatedAt).HasDefaultValueSql("CURRENT_TIMESTAMP");
             entity.Property(e => e.State).HasConversion(new EnumToStringConverter<State>());
-
-
-            entity.HasKey(e => e.Id);
-            entity.HasMany(e => e.Stages)
-                .WithOne(s => s.Job)
-                .HasForeignKey(s => s.JobId)
-                .OnDelete(DeleteBehavior.Cascade);
-        });
-
-        modelBuilder.Entity<JobStage>(entity =>
-        {
-            entity.Property(e => e.Id).ValueGeneratedNever();
-            entity.Property(e => e.CreatedAt).HasDefaultValueSql("CURRENT_TIMESTAMP");
-            entity.Property(e => e.State).HasConversion(new EnumToStringConverter<State>());
-
-            entity.HasKey(e => e.Id);
-            entity.HasMany(e => e.Tasks)
-                .WithOne(t => t.JobStage)
-                .HasForeignKey(t => t.JobStageId)
-                .OnDelete(DeleteBehavior.Cascade);
-
-        });
-
-        modelBuilder.Entity<JobTask>(entity =>
-        {
-            entity.Property(e => e.Id).ValueGeneratedNever();
-            entity.Property(e => e.CreatedAt).HasDefaultValueSql("CURRENT_TIMESTAMP");
-            entity.Property(e => e.State).HasConversion(new EnumToStringConverter<State>());
-
-            entity.HasOne(e => e.Parent)
-                .WithMany(t => t.Children)
-                .HasForeignKey(t => t.ParentId)
-                .OnDelete(DeleteBehavior.Cascade);
+            entity.Property(e => e.JobType).HasConversion(new EnumToStringConverter<JobType>());
+            entity.Property(e => e.Task).HasConversion(new EnumToStringConverter<JobTask>());
         });
 
         modelBuilder.Entity<Command>(entity =>
         {
             entity.Property(e => e.Id).ValueGeneratedNever();
-            entity.Property(e => e.CreatedAt).HasDefaultValueSql("CURRENT_TIMESTAMP");
             entity.Property(e => e.Status).HasConversion(new EnumToStringConverter<CommandStatus>());
+            entity.Property(e => e.ErorMessage).HasMaxLength(800);
         });
 
         modelBuilder.Entity<AllowedFileType>(entity =>
         {
             entity.Property(e => e.Id).ValueGeneratedNever();
             entity.Property(e => e.Extension).HasMaxLength(5).IsRequired();
-            entity.Property(e => e.MimeType).HasMaxLength(300);
-            entity.Property(e => e.IsActive).HasDefaultValue(true);
+            entity.Property(e => e.MimeType).HasMaxLength(30);
+            entity.Property(e => e.Chain).HasMaxLength(200);
             entity.Property(e => e.Comment).HasMaxLength(800);
 
             entity.HasKey(e => e.Id);
+            entity.HasIndex(e => e.Extension).IsUnique();
         });
     }
 

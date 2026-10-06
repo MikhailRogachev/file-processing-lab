@@ -4,11 +4,10 @@ public class Job : BaseEntity
 {
     public Guid MediaAssetId { get; set; }
     public MediaAsset MediaAsset { get; set; }
-    public int JobType { get; set; }
-    public string? Filename { get; set; }
+    public JobType JobType { get; set; }
+    public JobTask Task { get; set; }
     public State State { get; set; }
-    public DateTime? CompletedDate { get; set; }
+    public DateTimeOffset? CompletedDate { get; set; }
 
-    // Relational navigation
-    public ICollection<JobStage> Stages { get; set; } = new List<JobStage>();
+    protected Job() { }
 }
