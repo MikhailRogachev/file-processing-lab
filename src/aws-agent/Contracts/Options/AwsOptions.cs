@@ -1,4 +1,4 @@
-﻿namespace aws_agent.Options;
+﻿namespace aws_agent.Contracts.Options;
 public class AwsOptions
 {
     public string EndPoint { get; set; } = string.Empty;

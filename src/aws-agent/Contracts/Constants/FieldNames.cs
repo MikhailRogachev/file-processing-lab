@@ -1,4 +1,4 @@
-﻿namespace aws_agent.Contracts;
+﻿namespace aws_agent.Contracts.Constants;
 
 public static class FieldNames
 {

@@ -34,7 +34,7 @@ public static class AwsServicesInjectionExtensions
     {
         services.AddOptions<AwsOptions>().Bind(configurationManager.GetSection(nameof(AwsOptions)));
         services.AddScoped<IMessageConsumer<AmazonSQSClient>, SqsMessageConsumer>();
-        services.AddAWSService<IAmazonSQS>();
+        services.AddSingleton<IAwsClientConnectionFactory, AwsClientConnectionfactory>();
 
         // Background services
         services.AddHostedService<SqsListener>();

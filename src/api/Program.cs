@@ -1,19 +1,14 @@
 using api.Extensions;
 using aws_agent.Extensions;
-using data.Context;
+using data.Extensions;
 using data.Services;
-using domain.Interfaces.data;
 using domain.Interfaces.Outbox;
-using infrastructure.Oprions;
-using Microsoft.EntityFrameworkCore;
+using infrastructure.Extensions;
+using infrastructure.Options;
 
 var builder = WebApplication.CreateBuilder(args);
 var configuration = builder.Configuration!;
 var services = builder.Services;
-
-// With SQL Server registration:
-builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 // Get options
 services.AddOptions<OutboxMessageOptions>().Bind(configuration.GetSection(nameof(OutboxMessageOptions)));
@@ -21,10 +16,11 @@ services.AddOptions<OutboxMessageOptions>().Bind(configuration.GetSection(nameof
 // Services
 services.AddScoped<IMediaFileValidator, MediaFileValidator>();
 services.AddScoped<IOutboxMessageBuilderService, OutboxMessageBuildService>();
-services.AddScoped<IUnitOfWork, AppDbContext>();
 
 // aws consumer
 services.AwsServicesInjection(configuration);
+services.DataServicesInjection(configuration);
+services.InfrastructureServicesRegistration(configuration);
 
 services.AddControllers();
 services.AddEndpointsApiExplorer();

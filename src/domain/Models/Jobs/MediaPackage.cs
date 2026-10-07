@@ -7,20 +7,17 @@ public class MediaPackage : BaseEntity
     protected MediaPackage() { }
 
     public string Identifier { get; set; } = string.Empty;
-
-    public MediaPackage(string identifier)
-    {
-        Identifier = identifier;
-    }
-
     public HealthState State { get; set; } = HealthState.Health;
     public ICollection<MediaAsset> Assets { get; set; } = new List<MediaAsset>();
 
-    public MediaPackage(string identifier, string filename)
+    public MediaPackage(string identifier)
     {
         Id = Guid.NewGuid();
         Identifier = identifier;
+    }
 
+    public void ValidateAsset(string filename)
+    {
         AddEvent(new ValidateMediaAsset(filename));
     }
 }

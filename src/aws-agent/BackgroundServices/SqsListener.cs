@@ -1,16 +1,20 @@
-﻿using data.Context;
-using domain.Interfaces.Validators;
+﻿using infrastructure.Options;
 
 namespace aws_agent.Services;
 
 public class SqsListener(
     ILogger<SqsListener> logger,
     IOptions<AwsOptions> options,
+    IOptions<MessagingServiceSettings> messagingSettings,
     IServiceScopeFactory scopeFactory
     ) : BackgroundService
 {
 
     private readonly TimeSpan _period = TimeSpan.FromSeconds(options.Value.ConsumerRequestPeriodSec);
+
+    private string PublisherExchangeName => messagingSettings.Value.AwsIngestTology.ExchangeName;
+
+    private string PublisherRoutingKey => messagingSettings.Value.AwsIngestTology.RoutingKey;
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
@@ -24,29 +28,24 @@ public class SqsListener(
             {
                 using IServiceScope scope = scopeFactory.CreateScope();
                 var service = scope.ServiceProvider.GetRequiredService<IMessageConsumer<AmazonSQSClient>>();
-                var validator = scope.ServiceProvider.GetRequiredService<IMediaFileValidator>();
-                var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+                var publisher = scope.ServiceProvider.GetRequiredService<IRabbitMqPublisher>();
 
                 var messages = await service.ReceiveMessageAsync(stoppingToken);
 
                 if (messages.Any())
                 {
-
                     foreach (var message in messages)
                     {
-                        if (!await validator.ValidateMediaFileAsync(message.ObjectKey, stoppingToken))
-                        {
-                            logger.LogWarning("The file {key} is not allowed to processing.", message.ObjectKey);
-                            await service.RemoveMessagesAsync(messages, stoppingToken);
+                        // PUBLISH MESSAGE TO RABBIT MQ FOR NEXT STEP
+                        await publisher.PublishAsync(
+                            exchangeName: PublisherExchangeName,
+                            routingKey: PublisherRoutingKey,
+                            message: message,
+                            cancellationToken: stoppingToken
+                            );
 
-                            continue;
-                        }
-
-                        //var mediaFileEntity = new MediaAsset(message.ObjectKey);
-
-                        //context.MediaAssets.Add(mediaFileEntity);
-                        //await (context as IUnitOfWork).SaveAsync(stoppingToken);
-
+                        //Delete messages only after successful processing/publishing,
+                        //and delete them in bulk once after the loop completes (or individually on success).
                         await service.RemoveMessagesAsync(messages, stoppingToken);
                     }
 

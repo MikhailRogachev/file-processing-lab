@@ -1,10 +1,12 @@
 ﻿global using Amazon.SQS;
 global using Amazon.SQS.Model;
-global using aws_agent.Contracts;
-global using aws_agent.Options;
+global using aws_agent.Contracts.Constants;
+global using aws_agent.Contracts.Interfaces;
+global using aws_agent.Contracts.Options;
 global using domain.Dtos;
 global using domain.Interfaces.Messaging;
 global using Microsoft.Extensions.DependencyInjection;
 global using Microsoft.Extensions.Hosting;
 global using Microsoft.Extensions.Logging;
 global using Microsoft.Extensions.Options;
+global using System.Text.Json;

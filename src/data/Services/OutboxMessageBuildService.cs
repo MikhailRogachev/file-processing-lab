@@ -26,7 +26,7 @@ public class OutboxMessageBuildService(ILogger<OutboxMessageBuildService> logger
                 Content = JsonSerializer.Serialize(@event, @event.GetType()),
                 ContentType = @event.GetType().FullName ?? string.Empty,
                 Repeated = 0,
-                //CreatedAt = @event.CreatedAt,
+                CreatedAt = @event.CreatedAt,
                 LastUpdatedAt = DateTime.UtcNow,
             };
             outboxMessages.Add(outboxMessage);

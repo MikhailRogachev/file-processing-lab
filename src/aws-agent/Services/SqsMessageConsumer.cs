@@ -3,13 +3,23 @@ using domain.Extensions;
 
 namespace aws_agent.Services;
 
-public class SqsMessageConsumer(
-    ILogger<SqsMessageConsumer> logger,
-    IAmazonSQS client,
-    IOptions<AwsOptions> options
-    ) : IMessageConsumer<AmazonSQSClient>
+public class SqsMessageConsumer : IMessageConsumer<AmazonSQSClient>
 {
+    private readonly ILogger<SqsMessageConsumer> _logger;
+    private readonly string _queueName;
+    private readonly IAmazonSQS _client;
+
     private string? _cachedQueueUrl;
+
+    public SqsMessageConsumer(
+        ILogger<SqsMessageConsumer> logger,
+        IAwsClientConnectionFactory awsClientFactory
+        )
+    {
+        _logger = logger;
+        _queueName = awsClientFactory.SqsQueueName;
+        _client = awsClientFactory.SqsClient();
+    }
 
     /// <summary>
     /// Asynchronously retrieves and parses a batch of pending messages from the configured SQS queue.
@@ -36,16 +46,16 @@ public class SqsMessageConsumer(
             var queueUrl = await GetQueueUrlAsync(cancellationToken);
             var request = GetConsumeRequest(queueUrl);
 
-            logger.LogDebug("Requesting messages from the SQS queue - {queue}", queueUrl);
+            _logger.LogDebug("Requesting messages from the SQS queue - {queue}", queueUrl);
 
-            var response = await client.ReceiveMessageAsync(request);
+            var response = await _client.ReceiveMessageAsync(request, cancellationToken);
 
             if (response == null || response.HttpStatusCode != System.Net.HttpStatusCode.OK)
             {
                 throw new Exception($"Error during request messages. Status code - {response?.HttpStatusCode}");
             }
 
-            if (!response.Messages.IsAny())
+            if (response.Messages.IsAny())
             {
                 var consumedList = new List<QueueMessageConsumed>();
 
@@ -62,7 +72,7 @@ public class SqsMessageConsumer(
         }
         catch (Exception ex)
         {
-            logger.LogError(ex, "SqsMessageConsumer (ReceiveMessageAsync) error: {msg}", ex.Message);
+            _logger.LogError(ex, "SqsMessageConsumer (ReceiveMessageAsync) error: {msg}", ex.Message);
             throw;
         }
     }
@@ -99,40 +109,23 @@ public class SqsMessageConsumer(
                     }).ToList()
                 };
 
-                var response = await client.DeleteMessageBatchAsync(deleteRequest, cancellationToken);
+                var response = await _client.DeleteMessageBatchAsync(deleteRequest, cancellationToken);
 
                 if (response.Failed?.Count > 0)
                 {
-                    logger.LogWarning("Failed to delete {Count} messages from SQS queue", response.Failed.Count);
+                    _logger.LogWarning("Failed to delete {Count} messages from SQS queue", response.Failed.Count);
                 }
             }
         }
         catch (Exception ex)
         {
-            logger.LogError(ex, "SqsMessageConsumer (RemoveMassagesAsync) error: {msg}", ex.Message);
+            _logger.LogError(ex, "SqsMessageConsumer (RemoveMassagesAsync) error: {msg}", ex.Message);
             throw;
         }
     }
 
 
     #region private functions and methods
-
-    /// <summary>
-    /// Initializes and returns a configured <see cref="AmazonSQSClient"/> instance using current application options.
-    /// </summary>
-    /// <returns>
-    /// A new instance of <see cref="AmazonSQSClient"/> configured with explicit credentials, custom service endpoint, 
-    /// and authentication region.
-    /// </returns>
-    public AmazonSQSClient GetClient()
-    {
-        var value = options.Value;
-        return new AmazonSQSClient(value.AccessKeyId, value.SecretAccessKey, new AmazonSQSConfig
-        {
-            ServiceURL = options.Value.EndPoint,
-            AuthenticationRegion = options.Value.Region
-        });
-    }
 
     /// <summary>
     /// Asynchronously retrieves and caches the canonical Amazon SQS queue URL for the configured queue name.
@@ -164,9 +157,9 @@ public class SqsMessageConsumer(
         if (!string.IsNullOrWhiteSpace(_cachedQueueUrl))
             return _cachedQueueUrl;
 
-        var response = await client.GetQueueUrlAsync(new GetQueueUrlRequest
+        var response = await _client.GetQueueUrlAsync(new GetQueueUrlRequest
         {
-            QueueName = options.Value.SqsQueueName,
+            QueueName = _queueName,
         });
 
         _cachedQueueUrl = response.QueueUrl;
@@ -189,7 +182,7 @@ public class SqsMessageConsumer(
             MaxNumberOfMessages = 1,
             MessageAttributeNames = new List<string> { "All" },
             QueueUrl = queueUrl,
-            WaitTimeSeconds = 0,
+            WaitTimeSeconds = 20,
         };
     }
 

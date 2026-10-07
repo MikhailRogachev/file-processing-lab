@@ -1,6 +1,4 @@
-﻿using System.Text.Json;
-
-namespace aws_agent.Extensions;
+﻿namespace aws_agent.Extensions;
 
 public static class AwsMessageExtension
 {

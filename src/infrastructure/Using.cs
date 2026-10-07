@@ -1,4 +1,9 @@
 ﻿global using data.Context;
+global using domain.Interfaces.Messaging;
 global using domain.Interfaces.Validators;
-global using Microsoft.EntityFrameworkCore;
+global using infrastructure.Options;
 global using Microsoft.Extensions.Logging;
+global using Microsoft.Extensions.Options;
+global using RabbitMQ.Client;
+global using System.Text;
+global using System.Text.Json;

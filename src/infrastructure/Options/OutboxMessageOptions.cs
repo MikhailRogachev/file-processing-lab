@@ -1,4 +1,4 @@
-﻿namespace infrastructure.Oprions;
+﻿namespace infrastructure.Options;
 
 public class OutboxMessageOptions
 {
