@@ -108,7 +108,7 @@ public static class AwsMessageExtension
             switch (value.ToString())
             {
                 case "ObjectCreated:Put":
-                    return "Updated";
+                    return FieldNames.UpdatedEventName;
                 default:
                     return "Unknown";
             }

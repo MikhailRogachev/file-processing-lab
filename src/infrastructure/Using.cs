@@ -1,7 +1,13 @@
 ﻿global using data.Context;
-global using domain.Interfaces.Messaging;
+global using domain.Contracts.Contants;
+global using domain.Events.FileEvents;
+global using domain.Interfaces.Event;
+global using domain.Interfaces.Repository;
 global using domain.Interfaces.Validators;
+global using infrastructure.Contracts.Interfaces;
+global using infrastructure.EventHandlers.FileUpdated;
 global using infrastructure.Options;
+global using infrastructure.Services.Messaging;
 global using Microsoft.Extensions.Logging;
 global using Microsoft.Extensions.Options;
 global using RabbitMQ.Client;

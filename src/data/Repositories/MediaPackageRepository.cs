@@ -1,7 +1,9 @@
 ﻿using data.Context;
 using domain.Extensions;
+using domain.Interfaces.Data;
 using domain.Interfaces.Repository;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 
 namespace data.Repositories;
 
@@ -13,6 +15,7 @@ namespace data.Repositories;
 /// and coordinates transactional operations through the <see cref="IUnitOfWork"/> interface.
 /// </remarks>
 public class MediaPackageRepository(
+    ILogger<MediaPackageRepository> logger,
     AppDbContext context) : IMediaPackageRepository
 {
 
@@ -30,7 +33,14 @@ public class MediaPackageRepository(
     /// </remarks>
     public void Add(MediaPackage mediaPackage)
     {
-        context.MediaPackages.Add(mediaPackage);
+        try
+        {
+            context.MediaPackages.Add(mediaPackage);
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, ex.Message);
+        }
     }
 
     /// <summary>
@@ -87,7 +97,7 @@ public class MediaPackageRepository(
     /// A task representing the asynchronous operation. The task result contains the matching <see cref="MediaPackage"/> 
     /// instance if found; otherwise, <see langword="null"/>.
     /// </returns>
-    public async Task<MediaPackage?> GetÂsync(Guid id, CancellationToken cancellationToken)
+    public async Task<MediaPackage?> GetAsync(Guid id, CancellationToken cancellationToken)
     {
         return await context.MediaPackages.FirstOrDefaultAsync(x => x.Id == id);
     }

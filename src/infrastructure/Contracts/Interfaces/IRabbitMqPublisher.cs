@@ -1,4 +1,4 @@
-﻿namespace domain.Interfaces.Messaging;
+﻿namespace infrastructure.Contracts.Interfaces;
 
 public interface IRabbitMqPublisher
 {

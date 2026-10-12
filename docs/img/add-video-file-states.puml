@@ -1,0 +1,56 @@
+@startuml
+<style>
+    element {MinimumWidth 120}
+</style>
+
+|Aws Cloud|
+:File uploaded; <<object>>
+:S3 bucket;<<#Azure>>
+:FileChanged notification; <<objectSignal>>
+:SQS service; <<#Azure>>
+:Send FileChanged 
+SQS message; <<SendSignal>>
+
+|#Ivory|SqsListener|
+:Consume SQS 
+FileChanged message;<<#Aquamarine>>
+:Create FileChangedEvent;<<#Aquamarine>>
+
+|#Ivory|RabbitMqPublisher|
+:Define RoutingKey;<<#Aquamarine>>
+note
+Routing Key
+aws.fileupdated
+end note
+:Create FileChangedEvent
+message;<<#Aquamarine>>
+note
+The message contains 
+a handler message type
+in Type Basic Header
+end note
+:Poll the Event 
+to EventBus;<<#Aquamarine>>
+
+|#Ivory|Event Bus|
+:Set Message 
+To Queue; <<procedure>>
+
+|#Ivory|RabbitMqPublisher|
+if (Event Sent) then (yes)
+|SqsListener|
+    :Delete Message 
+    from SQS Queue; <<SendSignal>><<#LimeGreen>>    
+else (no)
+    :Log Error;<<#LightPink>>
+    note
+        Leave message 
+        in SQS.
+        It will retry 
+        after Visibility 
+        Timeout or move 
+        to DLQ.
+    end note
+endif
+kill
+@enduml

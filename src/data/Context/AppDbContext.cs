@@ -1,4 +1,5 @@
 ﻿using domain.Contracts.Enums;
+using domain.Interfaces.Data;
 using domain.Interfaces.Outbox;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;

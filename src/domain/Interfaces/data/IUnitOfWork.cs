@@ -1,4 +1,4 @@
-﻿namespace domain.Interfaces.data;
+﻿namespace domain.Interfaces.Data;
 
 public interface IUnitOfWork
 {

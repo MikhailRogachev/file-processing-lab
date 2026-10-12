@@ -1,6 +1,4 @@
-﻿using domain.Events;
-
-namespace domain.Models.Jobs;
+﻿namespace domain.Models.Jobs;
 
 public class MediaPackage : BaseEntity
 {
@@ -18,6 +16,6 @@ public class MediaPackage : BaseEntity
 
     public void ValidateAsset(string filename)
     {
-        AddEvent(new ValidateMediaAsset(filename));
+        //AddEvent(new ValidateMediaAsset(filename));
     }
 }

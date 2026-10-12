@@ -4,7 +4,6 @@ global using aws_agent.Contracts.Constants;
 global using aws_agent.Contracts.Interfaces;
 global using aws_agent.Contracts.Options;
 global using domain.Dtos;
-global using domain.Interfaces.Messaging;
 global using Microsoft.Extensions.DependencyInjection;
 global using Microsoft.Extensions.Hosting;
 global using Microsoft.Extensions.Logging;

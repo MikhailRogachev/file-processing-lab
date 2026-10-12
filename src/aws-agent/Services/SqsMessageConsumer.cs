@@ -3,7 +3,7 @@ using domain.Extensions;
 
 namespace aws_agent.Services;
 
-public class SqsMessageConsumer : IMessageConsumer<AmazonSQSClient>
+public class SqsMessageConsumer : IMessageConsumer
 {
     private readonly ILogger<SqsMessageConsumer> _logger;
     private readonly string _queueName;
@@ -89,7 +89,7 @@ public class SqsMessageConsumer : IMessageConsumer<AmazonSQSClient>
     /// <exception cref="AmazonSQSException">
     /// Thrown when an error occurs while communicating with the AWS SQS service during message deletion.
     /// </exception>
-    public async Task RemoveMessagesAsync(IList<QueueMessageConsumed> messages, CancellationToken cancellationToken)
+    public async Task RemoveMessagesAsync(List<QueueMessageConsumed> messages, CancellationToken cancellationToken)
     {
         if (!messages.IsAny())
             return;

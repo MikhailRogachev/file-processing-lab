@@ -1,20 +1,41 @@
-﻿using infrastructure.Options;
+﻿using domain.Contracts.Contants;
+using domain.Events;
+using domain.Events.FileEvents;
+using domain.Extensions;
+using infrastructure.Contracts.Interfaces;
+using infrastructure.Options;
 
 namespace aws_agent.Services;
 
 public class SqsListener(
     ILogger<SqsListener> logger,
     IOptions<AwsOptions> options,
-    IOptions<MessagingServiceSettings> messagingSettings,
+    IOptions<RabbitMqMessagingConfig> messagingSettings,
     IServiceScopeFactory scopeFactory
     ) : BackgroundService
 {
 
     private readonly TimeSpan _period = TimeSpan.FromSeconds(options.Value.ConsumerRequestPeriodSec);
+    private string _exchange_name = string.Empty;
 
-    private string PublisherExchangeName => messagingSettings.Value.AwsIngestTology.ExchangeName;
+    private string PublisherExchangeName
+    {
+        get
+        {
+            if (string.IsNullOrWhiteSpace(_exchange_name))
+            {
+                var topology = messagingSettings.Value.Topology;
+                if (!topology.TryGetValue(ExchangeKeys.EVENT_BUS, out var exchangeTopology))
+                {
+                    throw new ArgumentNullException("EventBus topology was not defined.");
+                }
 
-    private string PublisherRoutingKey => messagingSettings.Value.AwsIngestTology.RoutingKey;
+                _exchange_name = exchangeTopology.ExchangeName;
+            }
+
+            return _exchange_name;
+        }
+    }
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
@@ -27,33 +48,80 @@ public class SqsListener(
             try
             {
                 using IServiceScope scope = scopeFactory.CreateScope();
-                var service = scope.ServiceProvider.GetRequiredService<IMessageConsumer<AmazonSQSClient>>();
+                var service = scope.ServiceProvider.GetRequiredService<IMessageConsumer>();
                 var publisher = scope.ServiceProvider.GetRequiredService<IRabbitMqPublisher>();
 
                 var messages = await service.ReceiveMessageAsync(stoppingToken);
 
-                if (messages.Any())
+                if (!messages.IsAny())
                 {
-                    foreach (var message in messages)
+                    continue;
+                }
+
+                var messagesPublished = new List<QueueMessageConsumed>();
+
+                foreach (var message in messages)
+                {
+                    try
                     {
-                        // PUBLISH MESSAGE TO RABBIT MQ FOR NEXT STEP
-                        await publisher.PublishAsync(
-                            exchangeName: PublisherExchangeName,
-                            routingKey: PublisherRoutingKey,
-                            message: message,
-                            cancellationToken: stoppingToken
-                            );
+                        if (message.EventName == FieldNames.UpdatedEventName)
+                        {
+                            await publisher.PublishAsync(
+                                exchangeName: PublisherExchangeName,
+                                routingKey: RoutingKeys.AWS_FILECHANGED,
+                                message: new FileUpdatedEvent(
+                                    Guid.NewGuid(),
+                                    DateTimeOffset.UtcNow,
+                                    message.ObjectKey,
+                                    message.Bucket,
+                                    message.ObjectSize
+                                ),
+                                cancellationToken: stoppingToken
+                                );
 
-                        //Delete messages only after successful processing/publishing,
-                        //and delete them in bulk once after the loop completes (or individually on success).
-                        await service.RemoveMessagesAsync(messages, stoppingToken);
+                            logger.LogDebug("Published message 'FileChanged' for the file {fn}", message.ObjectKey);
+                        }
+                        else if (message.EventName == FieldNames.DeletedEventName)
+                        {
+                            await publisher.PublishAsync(
+                                exchangeName: PublisherExchangeName,
+                                routingKey: RoutingKeys.AWS_FILEDELETED,
+                                message: new FileDeletedEvent(
+                                    Guid.NewGuid(),
+                                    DateTimeOffset.UtcNow,
+                                    message.ObjectKey,
+                                    message.Bucket
+                                ),
+                                cancellationToken: stoppingToken
+                                );
+
+                            logger.LogDebug("Published message 'FileDeleted' for the file {fn}", message.ObjectKey);
+                        }
+                        else
+                        {
+                            logger.LogDebug("The event received is not defined.");
+                        }
+
+                        messagesPublished.Add(message);
                     }
+                    catch (Exception ex)
+                    {
+                        logger.LogError(ex, "Failed to publish RabbitMQ event {en} for the file {fn}",
+                            message.EventName,
+                            message.ObjectKey);
 
+                    }
+                }
+
+                // remove from the queue all messages suvccessfully published
+                if (messagesPublished.IsAny())
+                {
+                    await service.RemoveMessagesAsync(messagesPublished, stoppingToken);
                 }
             }
             catch (Exception ex)
             {
-                logger.LogError(ex, "Sqs listener error: {msg}", ex.Message);
+                logger.LogError(ex, "Unhandled error during SQS polling execution loop: {msg}", ex.Message);
             }
         }
     }
