@@ -215,7 +215,7 @@ public class RabbitMqListener : BackgroundService
 
         try
         {
-            var handler = scope.ServiceProvider.GetRequiredKeyedService(handlerInterfaceType, routingKey);
+            var handler = scope.ServiceProvider.GetRequiredService(handlerInterfaceType);
             await ((dynamic)handler).HandleAsync((dynamic)eventData, cancellationToken);
 
             return true;

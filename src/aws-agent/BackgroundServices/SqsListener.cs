@@ -1,41 +1,17 @@
-﻿using domain.Contracts.Contants;
-using domain.Events;
-using domain.Events.FileEvents;
+﻿using domain.Events.FileEvents;
 using domain.Extensions;
-using infrastructure.Contracts.Interfaces;
-using infrastructure.Options;
+using domain.Interfaces.Event;
 
 namespace aws_agent.Services;
 
 public class SqsListener(
     ILogger<SqsListener> logger,
     IOptions<AwsOptions> options,
-    IOptions<RabbitMqMessagingConfig> messagingSettings,
     IServiceScopeFactory scopeFactory
     ) : BackgroundService
 {
 
     private readonly TimeSpan _period = TimeSpan.FromSeconds(options.Value.ConsumerRequestPeriodSec);
-    private string _exchange_name = string.Empty;
-
-    private string PublisherExchangeName
-    {
-        get
-        {
-            if (string.IsNullOrWhiteSpace(_exchange_name))
-            {
-                var topology = messagingSettings.Value.Topology;
-                if (!topology.TryGetValue(ExchangeKeys.EVENT_BUS, out var exchangeTopology))
-                {
-                    throw new ArgumentNullException("EventBus topology was not defined.");
-                }
-
-                _exchange_name = exchangeTopology.ExchangeName;
-            }
-
-            return _exchange_name;
-        }
-    }
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
@@ -49,7 +25,7 @@ public class SqsListener(
             {
                 using IServiceScope scope = scopeFactory.CreateScope();
                 var service = scope.ServiceProvider.GetRequiredService<IMessageConsumer>();
-                var publisher = scope.ServiceProvider.GetRequiredService<IRabbitMqPublisher>();
+
 
                 var messages = await service.ReceiveMessageAsync(stoppingToken);
 
@@ -66,34 +42,15 @@ public class SqsListener(
                     {
                         if (message.EventName == FieldNames.UpdatedEventName)
                         {
-                            await publisher.PublishAsync(
-                                exchangeName: PublisherExchangeName,
-                                routingKey: RoutingKeys.AWS_FILECHANGED,
-                                message: new FileUpdatedEvent(
-                                    Guid.NewGuid(),
-                                    DateTimeOffset.UtcNow,
-                                    message.ObjectKey,
-                                    message.Bucket,
-                                    message.ObjectSize
-                                ),
-                                cancellationToken: stoppingToken
-                                );
+                            var handler = scope.ServiceProvider.GetRequiredService<IEventHandler<FileUpdatedEvent>>();
+                            await handler.HandleAsync(new FileUpdatedEvent(Guid.NewGuid(), Guid.NewGuid(), DateTimeOffset.UtcNow, message.ObjectKey, message.Bucket, message.ObjectSize), stoppingToken);
 
                             logger.LogDebug("Published message 'FileChanged' for the file {fn}", message.ObjectKey);
                         }
                         else if (message.EventName == FieldNames.DeletedEventName)
                         {
-                            await publisher.PublishAsync(
-                                exchangeName: PublisherExchangeName,
-                                routingKey: RoutingKeys.AWS_FILEDELETED,
-                                message: new FileDeletedEvent(
-                                    Guid.NewGuid(),
-                                    DateTimeOffset.UtcNow,
-                                    message.ObjectKey,
-                                    message.Bucket
-                                ),
-                                cancellationToken: stoppingToken
-                                );
+                            var handler = scope.ServiceProvider.GetRequiredService<IEventHandler<FileDeletedEvent>>();
+                            await handler.HandleAsync(new FileDeletedEvent(Guid.NewGuid(), Guid.NewGuid(), DateTimeOffset.UtcNow, message.ObjectKey, message.Bucket), stoppingToken);
 
                             logger.LogDebug("Published message 'FileDeleted' for the file {fn}", message.ObjectKey);
                         }

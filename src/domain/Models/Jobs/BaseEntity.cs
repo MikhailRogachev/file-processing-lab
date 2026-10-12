@@ -1,5 +1,4 @@
-﻿using domain.Interfaces.Event;
-using System.ComponentModel.DataAnnotations.Schema;
+﻿using System.ComponentModel.DataAnnotations.Schema;
 
 namespace domain.Models.Jobs;
 
@@ -24,7 +23,7 @@ public abstract class BaseEntity
     public DateTimeOffset CreatedAt { get; set; } = DateTimeOffset.UtcNow;
     public DateTimeOffset? UpdatedAt { get; set; }
 
-    public void AddEvent(IEvent @event)
+    public void AddEvents(IEvent @event)
     {
         _events.Add(@event);
     }

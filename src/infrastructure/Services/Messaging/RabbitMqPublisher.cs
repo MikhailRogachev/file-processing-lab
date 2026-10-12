@@ -1,6 +1,4 @@
-﻿using infrastructure.Contracts.Interfaces;
-
-namespace infrastructure.Services.Messaging;
+﻿namespace infrastructure.Services.Messaging;
 
 public class RabbitMqPublisher : IRabbitMqPublisher, IDisposable, IAsyncDisposable
 {
@@ -31,13 +29,13 @@ public class RabbitMqPublisher : IRabbitMqPublisher, IDisposable, IAsyncDisposab
             exchange: exchangeName,
             routingKey: routingKey,
             mandatory: true,
-            basicProperties: GetMsgProperies<T>(),
+            basicProperties: GetMsgProperies<T>(message),
             body: body,
             cancellationToken: cancellationToken);
 
         _logger.LogInformation(
             "Published {Type} to Exchange '{Exchange}' with RoutingKey '{RoutingKey}'",
-            typeof(T).Name, exchangeName, routingKey);
+            message.GetType().FullName, exchangeName, routingKey);
     }
 
     #region private methods and functions
@@ -71,11 +69,11 @@ public class RabbitMqPublisher : IRabbitMqPublisher, IDisposable, IAsyncDisposab
         }
     }
 
-    private BasicProperties GetMsgProperies<T>() => new BasicProperties
+    private BasicProperties GetMsgProperies<T>(T message) => new BasicProperties
     {
         ContentType = "application/json",
         DeliveryMode = DeliveryModes.Persistent,
-        Type = typeof(T).FullName
+        Type = message.GetType().FullName
     };
 
 

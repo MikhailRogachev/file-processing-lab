@@ -11,5 +11,5 @@ public class Command
     public DateTimeOffset CreatedAt { get; set; }
     public DateTimeOffset LastUpdatedAt { get; set; }
     public DateTimeOffset? ProcessedAt { get; set; }
-    public string ErorMessage { get; set; } = string.Empty;
+    public string ErrorMessage { get; set; } = string.Empty;
 }

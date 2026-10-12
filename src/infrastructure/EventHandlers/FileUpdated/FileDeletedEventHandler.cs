@@ -1,13 +1,9 @@
-﻿using domain.Events.FileEvents;
+﻿namespace infrastructure.EventHandlers.FileUpdated;
 
-namespace infrastructure.EventHandlers.FileUpdated;
-
-public class FileDeletedEventHandler(
-    ILogger<FileDeletedEventHandler> logger
-    ) : IEventHandler<FileDeletedEvent>
+public class FileDeletedEventHandler : IEventHandler<FileDeletedEvent>
 {
-    public async Task HandleAsync(FileDeletedEvent @event, CancellationToken cancellationToken)
+    public Task HandleAsync(FileDeletedEvent @event, CancellationToken cancellationToken)
     {
-        logger.LogInformation("Start Defete file handler");
+        throw new NotImplementedException();
     }
 }

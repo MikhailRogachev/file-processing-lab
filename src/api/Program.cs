@@ -4,14 +4,10 @@ using data.Extensions;
 using data.Services;
 using domain.Interfaces.Outbox;
 using infrastructure.Extensions;
-using infrastructure.Options;
 
 var builder = WebApplication.CreateBuilder(args);
 var configuration = builder.Configuration!;
 var services = builder.Services;
-
-// Get options
-services.AddOptions<OutboxMessageOptions>().Bind(configuration.GetSection(nameof(OutboxMessageOptions)));
 
 // Services
 services.AddScoped<IMediaFileValidator, MediaFileValidator>();

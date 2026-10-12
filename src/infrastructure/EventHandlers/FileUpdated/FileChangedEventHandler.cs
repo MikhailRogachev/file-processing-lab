@@ -5,9 +5,7 @@ namespace infrastructure.EventHandlers.FileUpdated;
 public class FileChangedEventHandler(
     ILogger<FileChangedEventHandler> logger,
     IServiceScopeFactory scopeFactory
-    //IMediaPackageRepository repository,
-    //IRabbitMqPublisher publisher
-    ) : IEventHandler<FileUpdatedEvent>, IEventHandler<FileDeletedEvent>
+    ) : IEventHandler<FileUpdatedEvent>
 {
     public async Task HandleAsync(FileUpdatedEvent @event, CancellationToken cancellationToken)
     {
@@ -25,26 +23,5 @@ public class FileChangedEventHandler(
         {
             logger.LogError(ex, ex.Message);
         }
-
-
-
-
-        //await publisher.PublishAsync(
-        //exchangeName: PublisherExchangeName,
-        //routingKey: RoutingKeys.AWS_FILECHANGED,
-        //message: new FileUpdatedEvent(
-        //    Guid.NewGuid(),
-        //    DateTimeOffset.UtcNow,
-        //    message.ObjectKey,
-        //    message.Bucket,
-        //    message.ObjectSize
-        //),
-        //cancellationToken: stoppingToken
-        //);
-    }
-
-    public Task HandleAsync(FileDeletedEvent @event, CancellationToken cancellationToken)
-    {
-        throw new NotImplementedException();
     }
 }

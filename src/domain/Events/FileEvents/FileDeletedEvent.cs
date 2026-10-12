@@ -1,3 +1,3 @@
 ﻿namespace domain.Events.FileEvents;
 
-public record class FileDeletedEvent(Guid EventId, DateTimeOffset CreatedAt, string FileName, string BaketName) : IEvent;
+public record class FileDeletedEvent(Guid Id, Guid ReferenceId, DateTimeOffset CreatedAt, string FileName, string BaketName) : IEvent;
