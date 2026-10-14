@@ -1,6 +1,5 @@
 ﻿using data.Context;
 using domain.Extensions;
-using domain.Interfaces.Data;
 using domain.Interfaces.Repository;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
@@ -56,7 +55,7 @@ public class MediaPackageRepository(
     /// Generates a unique business identifier from the filename, attaches or retrieves the aggregate root, 
     /// and invokes <see cref="MediaPackage.ValidateAsset(string)"/> to attach domain events.
     /// </remarks>
-    public async Task<MediaPackage> CreateAsync(string filename, CancellationToken cancellationToken)
+    public async Task<MediaPackage> CreateAsync(string filename, string etag, long size, CancellationToken cancellationToken)
     {
         if (string.IsNullOrWhiteSpace(filename))
             throw new ArgumentException("Filename cannot be null or empty.", nameof(filename));
@@ -70,7 +69,7 @@ public class MediaPackageRepository(
             Add(package);
         }
 
-        package.ValidateAsset(filename);
+        package.ValidateAsset(filename, etag, size);
         return package;
     }
 
@@ -85,7 +84,9 @@ public class MediaPackageRepository(
     /// </returns
     public async Task<MediaPackage?> GetAsync(string identifier, CancellationToken cancellationToken)
     {
-        return await context.MediaPackages.FirstOrDefaultAsync(x => x.Identifier == identifier);
+        return await context.MediaPackages
+            .Include(x => x.Assets)
+            .FirstOrDefaultAsync(x => x.Identifier == identifier, cancellationToken);
     }
 
     /// <summary>
@@ -99,6 +100,8 @@ public class MediaPackageRepository(
     /// </returns>
     public async Task<MediaPackage?> GetAsync(Guid id, CancellationToken cancellationToken)
     {
-        return await context.MediaPackages.FirstOrDefaultAsync(x => x.Id == id);
+        return await context.MediaPackages
+            .Include(x => x.Assets)
+            .FirstOrDefaultAsync(x => x.Id == id, cancellationToken);
     }
 }

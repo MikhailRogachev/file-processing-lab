@@ -29,29 +29,7 @@ while (isRunning)
     }
     else if (key == "3")
     {
-        var value = GetKeyValue("Enter file's number");
-        if (!int.TryParse(value, out int index))
-        {
-            DisplayError($"Invalid index is entered - {value}");
-            continue;
-        }
 
-        if (!fileCollection.Any())
-        {
-            DisplayError("Get File Collection first. Run option 1.");
-            continue;
-        }
-
-        var filename = fileCollection.Where(p => p.index == index).Select(p => p.filename).FirstOrDefault();
-
-        if (string.IsNullOrWhiteSpace(filename))
-        {
-            DisplayError($"Filename is not exist for the key {index}");
-            continue;
-        }
-
-        var detectedmime = await service.GetFileHeaderAsync(filename, CancellationToken.None);
-        DisplaySuccess($"The MIME found: {detectedmime}");
     }
     else if (key == "4")
     {

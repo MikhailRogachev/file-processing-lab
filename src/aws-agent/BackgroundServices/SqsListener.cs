@@ -43,14 +43,26 @@ public class SqsListener(
                         if (message.EventName == FieldNames.UpdatedEventName)
                         {
                             var handler = scope.ServiceProvider.GetRequiredService<IEventHandler<FileUpdatedEvent>>();
-                            await handler.HandleAsync(new FileUpdatedEvent(Guid.NewGuid(), Guid.NewGuid(), DateTimeOffset.UtcNow, message.ObjectKey, message.Bucket, message.ObjectSize), stoppingToken);
+                            await handler.HandleAsync(new FileUpdatedEvent(
+                                Guid.NewGuid(),
+                                Guid.NewGuid(),
+                                DateTimeOffset.UtcNow,
+                                message.ObjectKey,
+                                message.Bucket,
+                                message.ObjectSize,
+                                message.Etag), stoppingToken);
 
                             logger.LogDebug("Published message 'FileChanged' for the file {fn}", message.ObjectKey);
                         }
                         else if (message.EventName == FieldNames.DeletedEventName)
                         {
                             var handler = scope.ServiceProvider.GetRequiredService<IEventHandler<FileDeletedEvent>>();
-                            await handler.HandleAsync(new FileDeletedEvent(Guid.NewGuid(), Guid.NewGuid(), DateTimeOffset.UtcNow, message.ObjectKey, message.Bucket), stoppingToken);
+                            await handler.HandleAsync(new FileDeletedEvent(
+                                Guid.NewGuid(),
+                                Guid.NewGuid(),
+                                DateTimeOffset.UtcNow,
+                                message.ObjectKey,
+                                message.Bucket), stoppingToken);
 
                             logger.LogDebug("Published message 'FileDeleted' for the file {fn}", message.ObjectKey);
                         }

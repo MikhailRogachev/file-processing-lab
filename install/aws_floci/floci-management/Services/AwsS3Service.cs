@@ -61,9 +61,7 @@ public class AwsS3Service : AwsService
         }
     }
 
-    public async Task<bool> UploadFileAsync(
-        string filename,
-        CancellationToken cancellationToken)
+    public async Task<bool> UploadFileAsync(string filename, CancellationToken cancellationToken)
     {
         try
         {
@@ -82,7 +80,34 @@ public class AwsS3Service : AwsService
         catch (AmazonS3Exception ex)
         {
             Console.WriteLine("Error uploading sample: {0}", ex.Message);
-            return false;
+            throw;
         }
+    }
+
+    public async Task<List<FileItem>> GetFilesCollectionAsync(CancellationToken cancellationToken)
+    {
+        var list = new List<FileItem>();
+        var index = 1;
+        using var client = S3Client();
+        var request = new ListObjectsV2Request
+        {
+            BucketName = Settings.BUCKET_NAME,
+            Prefix = ""
+        };
+
+        var response = await client.ListObjectsV2Async(request, cancellationToken);
+
+        if (response == null || response.S3Objects == null || !response.S3Objects.Any())
+        {
+            return list;
+        }
+
+        foreach (S3Object obj in response.S3Objects)
+        {
+            list.Add(new FileItem(index, obj.Key, obj.Size));
+            index++;
+        }
+
+        return list;
     }
 }

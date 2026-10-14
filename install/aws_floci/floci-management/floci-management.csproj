@@ -8,21 +8,18 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
-  <ItemGroup>
-    <None Remove="sample001.mp4" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Content Include="sample001.mp4">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="AWSSDK.S3" Version="4.0.103.3" />
     <PackageReference Include="AWSSDK.SQS" Version="4.0.100.14" />
     <PackageReference Include="Microsoft.Extensions.Hosting" Version="9.0.20" />
     <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="9.0.20" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="sample005.mxf">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
 
 </Project>

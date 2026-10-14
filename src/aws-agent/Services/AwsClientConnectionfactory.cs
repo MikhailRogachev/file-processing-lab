@@ -1,4 +1,6 @@
-﻿namespace aws_agent.Services;
+﻿using Amazon.S3;
+
+namespace aws_agent.Services;
 
 public class AwsClientConnectionfactory(
     IOptions<AwsOptions> options
@@ -15,6 +17,19 @@ public class AwsClientConnectionfactory(
             {
                 ServiceURL = options.Value.EndPoint,
                 AuthenticationRegion = options.Value.Region
+            });
+    }
+
+    public IAmazonS3 S3Client()
+    {
+        return new AmazonS3Client(
+            options.Value.AccessKeyId,
+            options.Value.SecretAccessKey,
+            new AmazonS3Config
+            {
+                ServiceURL = options.Value.EndPoint,
+                AuthenticationRegion = options.Value.Region,
+                ForcePathStyle = true
             });
     }
 }
