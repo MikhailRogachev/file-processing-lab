@@ -16,10 +16,4 @@
     <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="9.0.20" />
   </ItemGroup>
 
-  <ItemGroup>
-    <None Update="sample005.mxf">
-      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
-    </None>
-  </ItemGroup>
-
 </Project>

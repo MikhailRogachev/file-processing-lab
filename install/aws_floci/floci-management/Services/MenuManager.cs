@@ -7,9 +7,8 @@ public class MenuManager
     private readonly IList<AppManagerItem> _items = new List<AppManagerItem>
     {
         new AppManagerItem("1", "List all S3 buckets"),
-        new AppManagerItem("2", "List all SQS Queues"),
-        new AppManagerItem("3", "Get the list of files in the backet."),
-        new AppManagerItem("4", "Upload File to S3 bucket"),
+        new AppManagerItem("2", "Get the list of files in the bucket."),
+        new AppManagerItem("3", "Upload File to S3 bucket"),
         new AppManagerItem("5", "Validate File"),
         new AppManagerItem("Q", "Quit the application")
     };

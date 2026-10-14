@@ -13,4 +13,8 @@
 		<PackageReference Include="AWSSDK.SQS" Version="4.0.100.14" />
 	</ItemGroup>
 
+	<ItemGroup>
+	  <ProjectReference Include="..\..\aws_floci\floci-management\floci-management.csproj" />
+	</ItemGroup>
+
 </Project>

@@ -4,9 +4,7 @@ ShowGreeting();
 
 var fileCollection = new List<FileItem>();
 var menuManager = new MenuManager();
-var service = new AwsS3Service();
-var validator = new S3FileValidator();
-var sqsservice = new AwsSqsService();
+var target = ConnectionTarget.REMOTE;
 
 var isRunning = true;
 
@@ -23,17 +21,13 @@ while (isRunning)
 
     if (key == "1")
     {
-        await GetBacketsCollectionAsync(CancellationToken.None);
+        await GetBucketsCollectionAsync(CancellationToken.None);
     }
     else if (key == "2")
     {
-        await GetQueueCollectionAsync(CancellationToken.None);
-    }
-    else if (key == "3")
-    {
         await GetFilesCollectionAsync(CancellationToken.None);
     }
-    else if (key == "4")
+    else if (key == "3")
     {
         await UploadFileAsync(CancellationToken.None);
     }
@@ -45,28 +39,29 @@ while (isRunning)
 
 #region private methods and functions
 
-async Task GetBacketsCollectionAsync(CancellationToken cancellationToken)
+async Task GetBucketsCollectionAsync(CancellationToken cancellationToken)
 {
     try
     {
-        var buckets = await service.ListS3BucketsAsync(cancellationToken);
+        var service = new S3BucketCollection(target);
         var bld = new StringBuilder();
 
-        if (buckets.Any())
-        {
-            bld.AppendLine("Backet List:");
+        var response = await service.RunRequestAsync(new S3RequestContext(), cancellationToken);
 
-            foreach (var bucket in buckets)
-            {
-                bld.AppendLine(string.Format("Name {0}, Region {1}, Arn {2}", bucket.BucketName, bucket.BucketRegion, bucket.BucketArn));
-            }
-        }
-        else
+        if (!response.IsSuccess)
         {
-            bld.AppendLine("There is no any buckets found.");
+            ShowErrorMessage(response.Message);
+            return;
         }
 
-        ShowSuceessMessage(bld.ToString(), ConsoleColor.Green);
+        bld.AppendLine("Bucket List:");
+
+        foreach (var bucket in response.Context!)
+        {
+            bld.AppendLine(string.Format("Name {0}, Region {1}, Arn {2}", bucket.BucketName, bucket.BucketRegion, bucket.BucketArn));
+        }
+
+        ShowSucceessMessage(bld.ToString(), ConsoleColor.Green);
     }
     catch (Exception ex)
     {
@@ -78,46 +73,28 @@ async Task GetBacketsCollectionAsync(CancellationToken cancellationToken)
     }
 }
 
-async Task GetQueueCollectionAsync(CancellationToken cancellationToken)
-{
-    try
-    {
-        var queues = await sqsservice.QueueListAsync(CancellationToken.None);
-        var bld = new StringBuilder();
-
-        if (!queues.Any())
-        {
-            bld.AppendLine("There is no any queue found.");
-        }
-        else
-        {
-            bld.AppendLine("QUEUES LIST:");
-            foreach (var queue in queues)
-            {
-                bld.AppendLine(string.Format("Queue - {0}", queue));
-            }
-        }
-
-        ShowSuceessMessage(bld.ToString(), ConsoleColor.DarkYellow);
-    }
-    catch (Exception ex)
-    {
-        var bld = new StringBuilder();
-        bld.AppendLine($"The Error occured during GetQueueCollectionAsync function");
-        bld.AppendLine($"Message: {ex.Message}, Error Type: {ex.GetType()}");
-
-        ShowErrorMessage(bld.ToString());
-    }
-}
-
 async Task GetFilesCollectionAsync(CancellationToken cancellationToken)
 {
     try
     {
+        var service = new S3ObjectCollection(target);
+        var bld = new StringBuilder();
 
         fileCollection.Clear();
-        fileCollection = await service.GetFilesCollectionAsync(CancellationToken.None);
-        var bld = new StringBuilder();
+
+        var response = await service.RunRequestAsync(new S3RequestContext
+        {
+            BucketName = service.Bucket,
+            Path = service.FolderName
+        }, cancellationToken);
+
+        if (!response.IsSuccess)
+        {
+            ShowErrorMessage(response.Message);
+            return;
+        }
+
+        fileCollection = response.Context!.ToList();
 
         if (fileCollection.Any())
         {
@@ -125,15 +102,11 @@ async Task GetFilesCollectionAsync(CancellationToken cancellationToken)
 
             foreach (var file in fileCollection)
             {
-                bld.AppendLine(string.Format("|{0,-3}|    {1}", file.index, file.filename));
+                bld.AppendLine(string.Format("|{0,-3}|    {1}", file.Index, file.FileName));
             }
         }
-        else
-        {
-            bld.AppendLine("There is no any files found.");
-        }
 
-        ShowSuceessMessage(bld.ToString());
+        ShowSucceessMessage(bld.ToString());
     }
     catch (Exception ex)
     {
@@ -147,92 +120,92 @@ async Task GetFilesCollectionAsync(CancellationToken cancellationToken)
 
 async Task UploadFileAsync(CancellationToken cancelToken)
 {
-    try
-    {
-        Console.WriteLine(menuManager.FileCollectionMenu());
-        Console.WriteLine("Enter the file name to upload (from project) or Q to previous menu: ");
-        var fn = Console.ReadLine();
+    //try
+    //{
+    //    Console.WriteLine(menuManager.FileCollectionMenu());
+    //    Console.WriteLine("Enter the file name to upload (from project) or Q to previous menu: ");
+    //    var fn = Console.ReadLine();
 
-        if (!ValidateInput(fn, false)) { return; }
-        if (fn!.ToUpper() == Settings.QuitKey) { return; }
+    //    if (!ValidateInput(fn, false)) { return; }
+    //    if (fn!.ToUpper() == KeySettings.QuitKey) { return; }
 
-        var response = await service.UploadFileAsync(fn!, CancellationToken.None);
+    //    var response = await service.UploadFileAsync(fn!, CancellationToken.None);
 
-        if (!response)
-        {
-            ShowSuceessMessage("File is not uploaded", ConsoleColor.DarkRed);
-        }
-        else
-        {
-            ShowSuceessMessage("File is uploaded successfully", ConsoleColor.Green);
-        }
-    }
-    catch (Exception ex)
-    {
-        var bld = new StringBuilder();
-        bld.AppendLine($"The Error occured during UploadFileAsync function");
-        bld.AppendLine($"Message: {ex.Message}, Error Type: {ex.GetType()}");
+    //    if (!response)
+    //    {
+    //        ShowSucceessMessage("File is not uploaded", ConsoleColor.DarkRed);
+    //    }
+    //    else
+    //    {
+    //        ShowSucceessMessage("File is uploaded successfully", ConsoleColor.Green);
+    //    }
+    //}
+    //catch (Exception ex)
+    //{
+    //    var bld = new StringBuilder();
+    //    bld.AppendLine($"The Error occured during UploadFileAsync function");
+    //    bld.AppendLine($"Message: {ex.Message}, Error Type: {ex.GetType()}");
 
-        ShowErrorMessage(bld.ToString());
-    }
+    //    ShowErrorMessage(bld.ToString());
+    //}
 }
 
 async Task ValidateFileAsync(CancellationToken cancellationToken)
 {
-    try
-    {
-        var bld = new StringBuilder();
+    //try
+    //{
+    //    var bld = new StringBuilder();
 
-        if (!fileCollection.Any())
-        {
-            bld.AppendLine("Please run menu Item 3");
-            bld.AppendLine("to get files collection from the Backet");
+    //    if (!fileCollection.Any())
+    //    {
+    //        bld.AppendLine("Please run menu Item 3");
+    //        bld.AppendLine("to get files collection from the Bucket");
 
-            ShowSuceessMessage(bld.ToString(), ConsoleColor.DarkRed);
+    //        ShowSucceessMessage(bld.ToString(), ConsoleColor.DarkRed);
 
-            return;
-        }
+    //        return;
+    //    }
 
-        bld.AppendLine("Files Collection to select file:");
+    //    bld.AppendLine("Files Collection to select file:");
 
-        foreach (var file in fileCollection)
-        {
-            bld.AppendLine(string.Format("|{0,-3}|    {1}", file.index, file.filename));
-        }
+    //    foreach (var file in fileCollection)
+    //    {
+    //        bld.AppendLine(string.Format("|{0,-3}|    {1}", file.Index, file.FileName));
+    //    }
 
-        Console.WriteLine(bld.ToString());
-        Console.WriteLine("Enter the number of the file to validate or Q to previous menu: ");
-        var fn = Console.ReadLine();
+    //    Console.WriteLine(bld.ToString());
+    //    Console.WriteLine("Enter the number of the file to validate or Q to previous menu: ");
+    //    var fn = Console.ReadLine();
 
-        if (!ValidateInput(fn, false)) { return; }
-        if (fn!.ToUpper() == Settings.QuitKey) { return; }
+    //    if (!ValidateInput(fn, false)) { return; }
+    //    if (fn!.ToUpper() == KeySettings.QuitKey) { return; }
 
-        if (!int.TryParse(fn!, out int index))
-        {
-            ShowErrorMessage("The input value must be number");
-            return;
-        }
+    //    if (!int.TryParse(fn!, out int index))
+    //    {
+    //        ShowErrorMessage("The input value must be number");
+    //        return;
+    //    }
 
-        var item = fileCollection.FirstOrDefault(p => p.index == index);
+    //    var item = fileCollection.FirstOrDefault(p => p.Index == index);
 
-        if (item == null)
-        {
-            ShowErrorMessage(string.Format("The file with index {0} doesn't exist", index));
-            return;
-        }
+    //    if (item == null)
+    //    {
+    //        ShowErrorMessage(string.Format("The file with index {0} doesn't exist", index));
+    //        return;
+    //    }
 
-        var response = await validator.ValidateFileAsync(item.filename, cancellationToken);
+    //    var response = await validator.ValidateFileAsync(item.FileName, cancellationToken);
 
-        ShowSuceessMessage(response);
-    }
-    catch (Exception ex)
-    {
-        var bld = new StringBuilder();
-        bld.AppendLine($"The Error occured during ValidateFileAsync function");
-        bld.AppendLine($"Message: {ex.Message}, Error Type: {ex.GetType()}");
+    //    ShowSucceessMessage(response);
+    //}
+    //catch (Exception ex)
+    //{
+    //    var bld = new StringBuilder();
+    //    bld.AppendLine($"The Error occured during ValidateFileAsync function");
+    //    bld.AppendLine($"Message: {ex.Message}, Error Type: {ex.GetType()}");
 
-        ShowErrorMessage(bld.ToString());
-    }
+    //    ShowErrorMessage(bld.ToString());
+    //}
 }
 
 string? GetKeyValue(string description)
@@ -245,7 +218,7 @@ string? GetKeyValue(string description)
     return value;
 }
 
-void ShowSuceessMessage(string message, ConsoleColor color = ConsoleColor.DarkYellow)
+void ShowSucceessMessage(string message, ConsoleColor color = ConsoleColor.DarkYellow)
 {
     Console.ForegroundColor = color;
     Console.WriteLine("--------------------------------------------------------------------------------------------");
@@ -286,7 +259,7 @@ bool ValidateInput(string? key, bool ismenu = true)
 
 bool IsQuit(string key)
 {
-    if (key.ToUpper() == Settings.QuitKey)
+    if (key.ToUpper() == KeySettings.QuitKey)
     {
         Console.ForegroundColor = ConsoleColor.Green;
         Console.WriteLine("--------------------------------------------------------------------------------------------");
