@@ -2,5 +2,5 @@
 
 public interface IOutboxEventPublisher
 {
-    Task RunAsync();
+    Task RunAsync(CancellationToken cancellationToken);
 }

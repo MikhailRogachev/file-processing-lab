@@ -1,0 +1,27 @@
+@startuml
+!include <C4/C4_Component>
+!include <C4/C4_Container>
+
+HIDE_STEREOTYPE()
+
+AddElementTag("external", $bgColor="LightGray")
+AddElementTag("entity", $bgColor="ea9999")
+AddElementTag("dto", $bgColor="LightYellow")
+AddRelTag("reference", $lineColor="LightGray")
+
+Boundary(daas, "DaaS") {
+  Boundary(license_service, "Licenses") {
+    Component(customerLicense, "CustomerLicense", $tags="entity")
+    Component(license, "License", "", $tags="entity")
+  }
+}
+
+Boundary(myaaccount_service, "MyAccount") {
+    Component(ma_businessAccount, "Business Account", $tags="entity")
+     Component(ma_subscription, "Subscription", $tags="entity")
+}
+Rel(customerLicense, license, "0..*")
+Rel(ma_businessAccount, ma_subscription, "0..*")
+Rel(ma_businessAccount, customerLicense,"One customer per business account")
+Rel(ma_subscription, license,"1 subscription is mapped to 1 license")
+@enduml

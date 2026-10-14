@@ -1,4 +1,4 @@
-﻿namespace aws_agent.Contracts;
+﻿namespace aws_agent.Contracts.Constants;
 
 public static class FieldNames
 {
@@ -10,6 +10,9 @@ public static class FieldNames
     public const string NAME_FIELD_NAME = "name";
     public const string KEY_FIELD_NAME = "key";
     public const string SIZE_FIELD_NAME = "size";
+
+    public const string UpdatedEventName = "Updated";
+    public const string DeletedEventName = "Deleted";
 }
 
 

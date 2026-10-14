@@ -71,7 +71,7 @@ public class AppDbContext : DbContext, IUnitOfWork
         {
             entity.Property(e => e.Id).ValueGeneratedNever();
             entity.Property(e => e.Status).HasConversion(new EnumToStringConverter<CommandStatus>());
-            entity.Property(e => e.ErorMessage).HasMaxLength(800);
+            entity.Property(e => e.ErrorMessage).HasMaxLength(800);
         });
 
         modelBuilder.Entity<AllowedFileType>(entity =>
@@ -103,9 +103,9 @@ public class AppDbContext : DbContext, IUnitOfWork
         if (pendingEventsEntities == null)
             return;
 
-        var pendingEvents = pendingEventsEntities.SelectMany(x => x.Entity.Events).ToList();
+        var pendingCommands = pendingEventsEntities.SelectMany(x => x.Entity.Events).ToList();
 
-        var messages = _outboxMessageBuilderService.Build(pendingEvents);
+        var messages = _outboxMessageBuilderService.Build(pendingCommands);
 
         foreach (var message in messages)
             Commands.Add(message);

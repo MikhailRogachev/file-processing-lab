@@ -2,6 +2,7 @@
 
 public interface IEvent
 {
-    public Guid Id { get; set; }
-    public DateTimeOffset CreatedAt { get; set; }
+    public Guid Id { get; }
+    public Guid ReferenceId { get; }
+    public DateTimeOffset CreatedAt { get; }
 }

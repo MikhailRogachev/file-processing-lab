@@ -1,5 +1,4 @@
-﻿using domain.Interfaces.Event;
-using domain.Models.Commands;
+﻿using domain.Models.Commands;
 
 namespace domain.Interfaces.Outbox;
 

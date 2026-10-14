@@ -18,6 +18,7 @@
   <ItemGroup>
     <ProjectReference Include="..\data\data.csproj" />
     <ProjectReference Include="..\domain\domain.csproj" />
+    <ProjectReference Include="..\infrastructure\infrastructure.csproj" />
   </ItemGroup>
 
 </Project>

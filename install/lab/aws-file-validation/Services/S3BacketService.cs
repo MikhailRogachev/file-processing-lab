@@ -3,6 +3,7 @@ using Amazon.Runtime;
 using Amazon.Runtime.CredentialManagement;
 using Amazon.S3;
 using Amazon.S3.Model;
+using System.Text;
 
 namespace aws_file_validation.Services;
 
@@ -61,7 +62,6 @@ public class S3BacketService
         return Path.GetExtension(filename);
     }
 
-
     public async Task<string> GetFileHeaderAsync(string filename, CancellationToken cancellationToken)
     {
         var extension = Path.GetExtension(filename);
@@ -84,8 +84,48 @@ public class S3BacketService
             return $"Invalid Mime for the file {filename}";
         }
 
-        return $"etected Mime {detectedMime} for the file: {filename}";
+        return $"{detectedMime} for the file: {filename}";
     }
+
+    public async Task<string> GetMetadataAsync(string fileName, CancellationToken cancellationToken)
+    {
+        try
+        {
+            var request = new GetObjectMetadataRequest
+            {
+                BucketName = backetname,
+                Key = fileName
+            };
+
+            using var client = new AmazonS3Client(GetCredentials(), RegionEndpoint.EUCentral1);
+            GetObjectMetadataResponse response = await client.GetObjectMetadataAsync(request);
+
+            if (response == null)
+            {
+                return $"Error occured during Metadata request. The response is null";
+            }
+
+            if (response.HttpStatusCode != System.Net.HttpStatusCode.OK)
+            {
+                return $"Error occured during Metadata request. The status code {response.HttpStatusCode}";
+            }
+
+            var msg = new StringBuilder();
+            msg.AppendLine($"Content-Type: {response.Headers.ContentType}");
+            msg.AppendLine($"Content-Length: {response.Headers.ContentLength} bytes");
+            msg.AppendLine($"Last-Modified: {response.LastModified}");
+            msg.AppendLine($"ETag: {response.ETag}");
+
+            return msg.ToString();
+        }
+        catch (Exception ex)
+        {
+            return $"Error occured during Metadata request {ex.Message}";
+        }
+    }
+
+
+    #region private methods and functions
 
     private static (bool IsValid, string DetectedMime) ValidateMagicBytes(string extension, byte[] header)
     {
@@ -121,6 +161,7 @@ public class S3BacketService
         return (true, "application/octet-stream");
     }
 
+    #endregion
 }
 
 public record FileItem(int index, string filename, long? filesize);

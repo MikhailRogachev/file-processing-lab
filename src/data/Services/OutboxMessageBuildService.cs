@@ -20,13 +20,13 @@ public class OutboxMessageBuildService(ILogger<OutboxMessageBuildService> logger
         {
             var outboxMessage = new Command
             {
-                Id = Guid.NewGuid(),
-                ReferenceId = @event.Id,
+                Id = @event.Id,
+                ReferenceId = @event.ReferenceId,
                 Status = CommandStatus.Queued,
                 Content = JsonSerializer.Serialize(@event, @event.GetType()),
                 ContentType = @event.GetType().FullName ?? string.Empty,
                 Repeated = 0,
-                //CreatedAt = @event.CreatedAt,
+                CreatedAt = DateTimeOffset.UtcNow,
                 LastUpdatedAt = DateTime.UtcNow,
             };
             outboxMessages.Add(outboxMessage);

@@ -7,6 +7,7 @@ public class MenuManager
         new AppManagerItem("1", "List all file"),
         new AppManagerItem("2", "Get FileExtension"),
         new AppManagerItem("3", "Get file header"),
+        new AppManagerItem("4", "Get file is seleted metadata"),
         new AppManagerItem("Q", "Quit the application")
     };
 

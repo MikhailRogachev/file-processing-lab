@@ -33,8 +33,8 @@ public static class AwsServicesInjectionExtensions
     public static IServiceCollection AwsServicesInjection(this IServiceCollection services, ConfigurationManager configurationManager)
     {
         services.AddOptions<AwsOptions>().Bind(configurationManager.GetSection(nameof(AwsOptions)));
-        services.AddScoped<IMessageConsumer<AmazonSQSClient>, SqsMessageConsumer>();
-        services.AddAWSService<IAmazonSQS>();
+        services.AddScoped<IMessageConsumer, SqsMessageConsumer>();
+        services.AddSingleton<IAwsClientConnectionFactory, AwsClientConnectionfactory>();
 
         // Background services
         services.AddHostedService<SqsListener>();

@@ -1,0 +1,29 @@
+@startuml
+!include <C4/C4_Component>
+!include <C4/C4_Container>
+
+HIDE_STEREOTYPE()
+
+AddElementTag("external", $bgColor="LightGray")
+AddElementTag("entity", $bgColor="ea9999")
+AddElementTag("dto", $bgColor="LightYellow")
+AddRelTag("reference", $lineColor="LightGray")
+
+Boundary(daas, "DaaS") {
+  Boundary(spa, "SPA: Admin Portal") {
+     Component(dto, "LicenseUsageHistoryDto", $tags="dto")
+  }
+
+  Boundary(license_service, "Licenses") {
+    Component(license_usages, "LicenseUsage", "Track reports which is sent to the MyAccount monthly", $tags="entity")
+  }
+}
+
+Boundary(myaaccount_service, "MyAccount") {
+    Component(subscriptions, "Usage", "Keep info about license usages in the DaaS", $tags="external")
+}
+
+Rel(dto, license_usages, "Used to display the license usage chart")
+Rel(license_service, subscriptions, "Sends monthly usage reports.")
+
+@enduml

@@ -1,0 +1,25 @@
+@startuml
+!include <C4/C4_Component>
+!include <C4/C4_Container>
+
+HIDE_STEREOTYPE()
+
+AddElementTag("external", $bgColor="LightGray")
+AddElementTag("entity", $bgColor="ea9999")
+AddElementTag("dto", $bgColor="LightYellow")
+AddRelTag("reference", $lineColor="LightGray")
+  
+Component(end_user, "End User", "Person", "DaaS user assigned to the User role", $tags="reference")
+Component(admin, "Admin", "Person", "DaaS user assigned to the Admin role", $tags="reference")
+Component(owner, "Owner", "Person", "Administrator of the business account in MyAccount", $tags="reference")
+Component(daas, "Parallels DaaS", "Software System", $tags="reference")
+Component(myAccount, "Parallels MyAccount", "Software System", $tags="external")
+
+Rel(end_user, daas, "Uses DaaS")
+Rel(admin, daas, "Manages DaaS for their users")
+Rel(owner, daas, "Manages Azure settings")
+Rel(owner, myAccount, "Manages business account and licenses")
+Rel(daas, myAccount, "Queries details of business account and licenses, Reports license usage")
+Rel(myAccount, daas, "Notifies about business account or license changes")
+
+@enduml

@@ -1,5 +1,6 @@
-﻿using data.Context;
-using domain.Interfaces.Validators;
+﻿using domain.Events.FileEvents;
+using domain.Extensions;
+using domain.Interfaces.Event;
 
 namespace aws_agent.Services;
 
@@ -23,38 +24,61 @@ public class SqsListener(
             try
             {
                 using IServiceScope scope = scopeFactory.CreateScope();
-                var service = scope.ServiceProvider.GetRequiredService<IMessageConsumer<AmazonSQSClient>>();
-                var validator = scope.ServiceProvider.GetRequiredService<IMediaFileValidator>();
-                var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+                var service = scope.ServiceProvider.GetRequiredService<IMessageConsumer>();
+
 
                 var messages = await service.ReceiveMessageAsync(stoppingToken);
 
-                if (messages.Any())
+                if (!messages.IsAny())
                 {
+                    continue;
+                }
 
-                    foreach (var message in messages)
+                var messagesPublished = new List<QueueMessageConsumed>();
+
+                foreach (var message in messages)
+                {
+                    try
                     {
-                        if (!await validator.ValidateMediaFileAsync(message.ObjectKey, stoppingToken))
+                        if (message.EventName == FieldNames.UpdatedEventName)
                         {
-                            logger.LogWarning("The file {key} is not allowed to processing.", message.ObjectKey);
-                            await service.RemoveMessagesAsync(messages, stoppingToken);
+                            var handler = scope.ServiceProvider.GetRequiredService<IEventHandler<FileUpdatedEvent>>();
+                            await handler.HandleAsync(new FileUpdatedEvent(Guid.NewGuid(), Guid.NewGuid(), DateTimeOffset.UtcNow, message.ObjectKey, message.Bucket, message.ObjectSize), stoppingToken);
 
-                            continue;
+                            logger.LogDebug("Published message 'FileChanged' for the file {fn}", message.ObjectKey);
+                        }
+                        else if (message.EventName == FieldNames.DeletedEventName)
+                        {
+                            var handler = scope.ServiceProvider.GetRequiredService<IEventHandler<FileDeletedEvent>>();
+                            await handler.HandleAsync(new FileDeletedEvent(Guid.NewGuid(), Guid.NewGuid(), DateTimeOffset.UtcNow, message.ObjectKey, message.Bucket), stoppingToken);
+
+                            logger.LogDebug("Published message 'FileDeleted' for the file {fn}", message.ObjectKey);
+                        }
+                        else
+                        {
+                            logger.LogDebug("The event received is not defined.");
                         }
 
-                        //var mediaFileEntity = new MediaAsset(message.ObjectKey);
-
-                        //context.MediaAssets.Add(mediaFileEntity);
-                        //await (context as IUnitOfWork).SaveAsync(stoppingToken);
-
-                        await service.RemoveMessagesAsync(messages, stoppingToken);
+                        messagesPublished.Add(message);
                     }
+                    catch (Exception ex)
+                    {
+                        logger.LogError(ex, "Failed to publish RabbitMQ event {en} for the file {fn}",
+                            message.EventName,
+                            message.ObjectKey);
 
+                    }
+                }
+
+                // remove from the queue all messages suvccessfully published
+                if (messagesPublished.IsAny())
+                {
+                    await service.RemoveMessagesAsync(messagesPublished, stoppingToken);
                 }
             }
             catch (Exception ex)
             {
-                logger.LogError(ex, "Sqs listener error: {msg}", ex.Message);
+                logger.LogError(ex, "Unhandled error during SQS polling execution loop: {msg}", ex.Message);
             }
         }
     }

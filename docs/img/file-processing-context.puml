@@ -1,0 +1,40 @@
+@startuml
+!include <C4/C4_Component>
+!include <C4/C4_Container>
+
+HIDE_STEREOTYPE()
+
+AddElementTag("external", $bgColor="LightGray")
+AddElementTag("entity", $bgColor="ea9999")
+AddElementTag("dto", $bgColor="LightYellow")
+AddRelTag("reference", $lineColor="LightGray")
+
+
+Boundary(awscloud, "AWS Cloud"){
+    Component(S3backet, "S3 backet", "aws S3", $tags="external")
+    Component(SqsQueue, "Sqs Queue", "aws Sqs", $tags="external")    
+}
+
+Boundary(fo, "File Orchestrator"){
+    Component(outbox, "Outbox Service", "background service", $tags="entity")    
+    Component(awslistener, "Sqs Listener", "background service", $tags="entity")
+    Component(publisher, "Event Publisher", "service", $tags="entity")
+    Component(eventbus, "Event Bus", "background service", $tags="entity")
+    Component(eventhandler, "Event Handler", "service", $tags="entity" )    
+}
+
+Component(rabbitMq, "Queue", "rabbitMq", $tags="external")
+Component(db, "Data Base", "Ms Sql server", $tags="external")
+
+Rel(S3backet, SqsQueue, "File Changed")
+Rel(S3backet, SqsQueue, "File Deleted")
+Rel(awslistener, SqsQueue, "Consume")
+Rel(awslistener, publisher, "Publish Event")
+Rel(outbox, publisher, "Publish Event")
+Rel(publisher, rabbitMq, "Publish")
+Rel(eventbus, rabbitMq, "Consume")
+Rel(eventbus, eventhandler, "Consume")
+Rel(eventhandler, db, "Create, Update")
+Rel(outbox, db, "Retrieve")
+
+@enduml

@@ -1,0 +1,29 @@
+@startuml
+!include <C4/C4_Component>
+!include <C4/C4_Container>
+
+HIDE_STEREOTYPE()
+
+AddElementTag("external", $bgColor="LightGray")
+AddElementTag("entity", $bgColor="ea9999")
+AddElementTag("dto", $bgColor="LightYellow")
+AddRelTag("reference", $lineColor="LightGray")
+
+Boundary(daas, "DaaS") {
+  Boundary(identity_service, "Identity") {
+    Component(users, "Users", "Containts user information (email, userEntraId etc.)",  $tags="entity")
+  }
+
+  Boundary(admin_portal, "SPA: Admin Portal") {
+     Component(dto, "AllocatedSeatsGetDto", $tags="dto")
+  }
+
+  Boundary(license_service, "Licenses") {
+    Component(license_seats, "LicenseSeats", "Track user seats allocation", $tags="entity")
+  }
+}
+
+Rel(dto, license_seats, "Used to display allocated seat details.")
+Rel(users, license_seats, "Provides user info when allocate a seat \nfor EndUser")
+
+@enduml
