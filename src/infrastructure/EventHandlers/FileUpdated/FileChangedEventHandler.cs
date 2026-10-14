@@ -16,7 +16,7 @@ public class FileChangedEventHandler(
             using var scope = scopeFactory.CreateScope();
             var repository = scope.ServiceProvider.GetRequiredService<IMediaPackageRepository>();
 
-            await repository.CreateAsync(@event.FileName, cancellationToken);
+            await repository.CreateAsync(@event.FileName, @event.etag, @event.FileSize, cancellationToken);
             await repository.UnitOfWork.SaveAsync(cancellationToken);
         }
         catch (Exception ex)

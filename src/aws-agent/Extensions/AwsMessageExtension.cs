@@ -34,6 +34,7 @@ public static class AwsMessageExtension
         var bucketName = bucket.GetElementStringValue(FieldNames.NAME_FIELD_NAME);
         var key = obj.GetElementStringValue(FieldNames.KEY_FIELD_NAME);
         var size = obj.GetElementLongValue(FieldNames.SIZE_FIELD_NAME);
+        var etag = obj.GetElementStringValue(FieldNames.ETAG_FIELD_NAME);
 
         return new QueueMessageConsumed(
             message.MessageId,
@@ -41,7 +42,8 @@ public static class AwsMessageExtension
             eventName,
             bucketName,
             key,
-            size);
+            size,
+            etag);
     }
 
     /// <summary>

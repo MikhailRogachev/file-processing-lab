@@ -6,5 +6,6 @@ public record QueueMessageConsumed(
     string EventName,
     string Bucket,
     string ObjectKey,
-    long ObjectSize
+    long ObjectSize,
+    string Etag
     );

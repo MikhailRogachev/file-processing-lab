@@ -1,6 +1,6 @@
 ﻿namespace domain.Contracts.Enums;
 
-public enum FileType
+public enum AssetType
 {
     Unknown = 0,
     Video = 1,

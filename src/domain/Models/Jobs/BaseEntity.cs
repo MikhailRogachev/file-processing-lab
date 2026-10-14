@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations.Schema;
+﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace domain.Models.Jobs;
 
@@ -18,9 +19,15 @@ public abstract class BaseEntity
     public IReadOnlyCollection<IEvent> Events => _events;
 
     public Guid Id { get; set; }
+
+    [MaxLength(200)]
     public string Result { get; set; } = string.Empty;
+
+    [MaxLength(800)]
     public string Details { get; set; } = string.Empty;
+
     public DateTimeOffset CreatedAt { get; set; } = DateTimeOffset.UtcNow;
+
     public DateTimeOffset? UpdatedAt { get; set; }
 
     public void AddEvents(IEvent @event)

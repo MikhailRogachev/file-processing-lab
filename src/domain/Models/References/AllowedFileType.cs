@@ -7,4 +7,5 @@ public class AllowedFileType
     public string MimeType { get; set; } = string.Empty;
     public string Chain { get; set; } = string.Empty;
     public string Comment { get; set; } = string.Empty;
+    public AssetType AssetType { get; set; }
 }

@@ -37,7 +37,7 @@ public class AppDbContext : DbContext, IUnitOfWork
         {
             entity.Property(e => e.Id).ValueGeneratedNever();
             entity.Property(e => e.Identifier).HasMaxLength(500).IsRequired();
-            entity.Property(e => e.State).HasConversion(new EnumToStringConverter<HealthState>());
+            entity.Property(e => e.State).HasConversion(new EnumToStringConverter<HealthState>()).HasMaxLength(10);
 
             entity.HasIndex(e => e.Identifier).IsUnique();
             entity.HasMany(e => e.Assets)
@@ -50,6 +50,8 @@ public class AppDbContext : DbContext, IUnitOfWork
         {
             entity.Property(e => e.Id).ValueGeneratedNever();
             entity.Property(e => e.Filename).HasMaxLength(550).IsRequired();
+            entity.Property(e => e.AssetType).HasConversion(new EnumToStringConverter<AssetType>()).HasMaxLength(20);
+            entity.Property(e => e.Etag).HasMaxLength(100);
 
             entity.HasIndex(e => new { e.MediaPackageId, e.Filename }).IsUnique();
             entity.HasMany(e => e.Jobs)
@@ -62,15 +64,15 @@ public class AppDbContext : DbContext, IUnitOfWork
         modelBuilder.Entity<Job>(entity =>
         {
             entity.Property(e => e.Id).ValueGeneratedNever();
-            entity.Property(e => e.State).HasConversion(new EnumToStringConverter<State>());
-            entity.Property(e => e.JobType).HasConversion(new EnumToStringConverter<JobType>());
-            entity.Property(e => e.Task).HasConversion(new EnumToStringConverter<JobTask>());
+            entity.Property(e => e.State).HasConversion(new EnumToStringConverter<State>()).HasMaxLength(20);
+            entity.Property(e => e.JobType).HasConversion(new EnumToStringConverter<JobType>()).HasMaxLength(20);
+            entity.Property(e => e.Task).HasConversion(new EnumToStringConverter<JobTask>()).HasMaxLength(20);
         });
 
         modelBuilder.Entity<Command>(entity =>
         {
             entity.Property(e => e.Id).ValueGeneratedNever();
-            entity.Property(e => e.Status).HasConversion(new EnumToStringConverter<CommandStatus>());
+            entity.Property(e => e.Status).HasConversion(new EnumToStringConverter<CommandStatus>()).HasMaxLength(20);
             entity.Property(e => e.ErrorMessage).HasMaxLength(800);
         });
 
@@ -81,6 +83,7 @@ public class AppDbContext : DbContext, IUnitOfWork
             entity.Property(e => e.MimeType).HasMaxLength(30);
             entity.Property(e => e.Chain).HasMaxLength(200);
             entity.Property(e => e.Comment).HasMaxLength(800);
+            entity.Property(e => e.AssetType).HasConversion(new EnumToStringConverter<AssetType>()).HasMaxLength(20);
 
             entity.HasKey(e => e.Id);
             entity.HasIndex(e => e.Extension).IsUnique();

@@ -10,6 +10,7 @@ public static class FieldNames
     public const string NAME_FIELD_NAME = "name";
     public const string KEY_FIELD_NAME = "key";
     public const string SIZE_FIELD_NAME = "size";
+    public const string ETAG_FIELD_NAME = "eTag";
 
     public const string UpdatedEventName = "Updated";
     public const string DeletedEventName = "Deleted";
