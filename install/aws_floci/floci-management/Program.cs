@@ -6,6 +6,8 @@ var fileCollection = new List<FileItem>();
 var menuManager = new MenuManager();
 var target = ConnectionTarget.REMOTE;
 
+_ = menuManager.GetSamplesRootDirectory();
+
 var isRunning = true;
 
 while (isRunning)
@@ -120,6 +122,10 @@ async Task GetFilesCollectionAsync(CancellationToken cancellationToken)
 
 async Task UploadFileAsync(CancellationToken cancelToken)
 {
+
+    var basef = menuManager.GetSamplesRootDirectory();
+    ShowSucceessMessage(basef, ConsoleColor.Blue);
+
     //try
     //{
     //    Console.WriteLine(menuManager.FileCollectionMenu());

@@ -13,6 +13,8 @@ public class MenuManager
         new AppManagerItem("Q", "Quit the application")
     };
 
+    private string _samplesRootDirectory = string.Empty;
+
     public IList<AppManagerItem> MainMenu => _items;
 
     public bool IsKeyValid(string key)
@@ -29,5 +31,39 @@ public class MenuManager
         bld.AppendLine("sample004.fr.srt");
         bld.AppendLine("sample005.mxf");
         return bld.ToString();
+    }
+
+    public string GetSamplesRootDirectory()
+    {
+        if (!string.IsNullOrWhiteSpace(_samplesRootDirectory))
+            return _samplesRootDirectory;
+
+        var directory = new DirectoryInfo(AppContext.BaseDirectory);
+        _samplesRootDirectory = GetParent(directory);
+        return _samplesRootDirectory;
+    }
+
+
+
+
+    public IList<Sample> GetTestDataFilesMenu()
+    {
+
+        return new List<Sample>();
+
+
+
+    }
+
+    private string GetParent(DirectoryInfo di)
+    {
+        if (di == null || di.Parent == null)
+            throw new DirectoryNotFoundException();
+
+        var value = di.GetDirectories().FirstOrDefault(p => p.Name == KeySettings.SAMPLE_ROOT_DIRECTORY_NAME);
+        if (value != null)
+            return value.FullName;
+
+        return GetParent(di.Parent);
     }
 }
