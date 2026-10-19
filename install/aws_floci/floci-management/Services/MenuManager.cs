@@ -9,13 +9,16 @@ public class MenuManager
         new AppManagerItem("1", "List all S3 buckets"),
         new AppManagerItem("2", "Get the list of files in the bucket."),
         new AppManagerItem("3", "Upload File to S3 bucket"),
-        new AppManagerItem("5", "Validate File"),
+        new AppManagerItem("4", "Validate File"),
         new AppManagerItem("Q", "Quit the application")
     };
-
+    private readonly FileMenuBuilder _fileMenuBuilder = new FileMenuBuilder();
     private string _samplesRootDirectory = string.Empty;
 
     public IList<AppManagerItem> MainMenu => _items;
+    public bool FileMenuEmpty => _fileMenuBuilder.IsEmpty;
+    public string FileMenu => _fileMenuBuilder.ToString();
+    public IList<Sample> FileMenuItems => _fileMenuBuilder.Samples;
 
     public bool IsKeyValid(string key)
     {
@@ -43,16 +46,23 @@ public class MenuManager
         return _samplesRootDirectory;
     }
 
-
-
-
-    public IList<Sample> GetTestDataFilesMenu()
+    public bool GetTestDataFilesMenu()
     {
+        var dir = new DirectoryInfo(GetSamplesRootDirectory());
+        var files = dir.GetFiles();
 
-        return new List<Sample>();
+        if (files.Any())
+        {
+            var index = 1;
 
+            foreach (var file in files)
+            {
+                _fileMenuBuilder.Samples.Add(new Sample(index, file.Name, file.FullName, dir.FullName));
+                index++;
+            }
+        }
 
-
+        return !_fileMenuBuilder.IsEmpty;
     }
 
     private string GetParent(DirectoryInfo di)

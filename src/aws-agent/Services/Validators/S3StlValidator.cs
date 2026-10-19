@@ -5,8 +5,9 @@ namespace aws_agent.Services.Validators;
 
 public class S3StlValidator(
     ILogger<S3StlValidator> logger,
-    IAwsClientConnectionFactory awsClientFactory
-    ) : S3BaseValidator(logger, awsClientFactory)
+    IAwsClientConnectionFactory awsClientFactory,
+    IOptions<AwsOptions> options
+    ) : S3BaseValidator(logger, awsClientFactory, options)
 {
     public override string Name => "StlFileProbe";
     protected override int StartByte => 0;

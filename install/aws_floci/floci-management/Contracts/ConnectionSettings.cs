@@ -8,7 +8,7 @@ public static class ConnectionSettings
     public const string LOCAL_AWS_DEFAULT_REGION = "us-east-1";
 
     public const string LOCAL_BUCKET_NAME = "file-processing-bucket";
-    public const string LOCAL_FOLDER_NAME = "/";
+    public const string LOCAL_FOLDER_NAME = "";
     public const string LOCAL_SQS_QUEUE_NAME = "s3-file-events-queue";
 
     public const string REMOTE_PROFILE_FILENAME = @"C:\Users\mikrog\.aws\appcredentials";

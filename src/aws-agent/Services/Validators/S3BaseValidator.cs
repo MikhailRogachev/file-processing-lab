@@ -13,12 +13,19 @@ public abstract class S3BaseValidator : IFileProbeValidator
     protected abstract int StartByte { get; }
     protected abstract int EndByte { get; }
 
+    public string BucketName { get; init; }
+
+    public string Folder { get; init; }
+
     public S3BaseValidator(
         ILogger logger,
-        IAwsClientConnectionFactory awsClientFactory)
+        IAwsClientConnectionFactory awsClientFactory,
+        IOptions<AwsOptions> options)
     {
         Logger = logger;
         Client = awsClientFactory.S3Client();
+        BucketName = options.Value.BucketName;
+        Folder = string.Empty;
     }
 
     public GetObjectRequest GetObjectRequest(FileProbeContext context, int firstByte, int lastByte)

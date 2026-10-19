@@ -4,8 +4,9 @@ namespace aws_agent.Services.Validators;
 
 public class S3MxfValidator(
     ILogger<S3MxfValidator> logger,
-    IAwsClientConnectionFactory awsClientFactory
-    ) : S3BaseValidator(logger, awsClientFactory)
+    IAwsClientConnectionFactory awsClientFactory,
+    IOptions<AwsOptions> options
+    ) : S3BaseValidator(logger, awsClientFactory, options)
 {
     public override string Name => "MxfFileProbe";
     protected override int StartByte => 0;

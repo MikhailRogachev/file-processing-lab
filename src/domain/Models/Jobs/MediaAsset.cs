@@ -4,6 +4,7 @@ public class MediaAsset : BaseEntity
 {
     public string Filename { get; set; } = string.Empty;
     public AssetType AssetType { get; set; }
+    public State CurrentState { get; set; }
     public long Size { get; set; }
     public string Etag { get; set; }
     public int Version { get; set; }
@@ -19,4 +20,22 @@ public class MediaAsset : BaseEntity
     }
 
     protected MediaAsset() { }
+
+    #region domains events
+
+    public void Validated()
+    {
+        CurrentState = State.Validated;
+        UpdatedAt = DateTimeOffset.UtcNow;
+
+
+
+    }
+
+    public void Failed()
+    {
+
+    }
+
+    #endregion
 }

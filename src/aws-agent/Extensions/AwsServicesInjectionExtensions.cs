@@ -1,4 +1,7 @@
 ﻿using aws_agent.Services;
+using aws_agent.Services.Validators;
+using domain.Contracts.Contants;
+using domain.Interfaces.Validators;
 using Microsoft.Extensions.Configuration;
 
 namespace aws_agent.Extensions;
@@ -35,6 +38,12 @@ public static class AwsServicesInjectionExtensions
         services.AddOptions<AwsOptions>().Bind(configurationManager.GetSection(nameof(AwsOptions)));
         services.AddScoped<IMessageConsumer, SqsMessageConsumer>();
         services.AddSingleton<IAwsClientConnectionFactory, AwsClientConnectionfactory>();
+
+        // validators
+        services.AddKeyedScoped<IFileProbeValidator, S3Mp4Validator>(FileFormatKeys.MP4);
+        services.AddKeyedScoped<IFileProbeValidator, S3MxfValidator>(FileFormatKeys.MXF);
+        services.AddKeyedScoped<IFileProbeValidator, S3SrtValidator>(FileFormatKeys.SRT);
+        services.AddKeyedScoped<IFileProbeValidator, S3StlValidator>(FileFormatKeys.STL);
 
         // Background services
         services.AddHostedService<SqsListener>();

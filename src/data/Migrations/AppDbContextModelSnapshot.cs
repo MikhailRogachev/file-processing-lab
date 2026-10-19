@@ -127,6 +127,11 @@ namespace data.Migrations
                     b.Property<DateTimeOffset>("CreatedAt")
                         .HasColumnType("datetimeoffset");
 
+                    b.Property<string>("CurrentState")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
                     b.Property<string>("Details")
                         .IsRequired()
                         .HasMaxLength(800)
@@ -213,8 +218,8 @@ namespace data.Migrations
 
                     b.Property<string>("AssetType")
                         .IsRequired()
-                        .HasMaxLength(20)
-                        .HasColumnType("nvarchar(20)");
+                        .HasMaxLength(10)
+                        .HasColumnType("nvarchar(10)");
 
                     b.Property<string>("Chain")
                         .IsRequired()

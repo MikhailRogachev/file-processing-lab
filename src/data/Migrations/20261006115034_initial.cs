@@ -134,17 +134,17 @@ namespace data.Migrations
                 column: "Identifier",
                 unique: true);
 
-            migrationBuilder.Sql("INSERT INTO \"AllowedFileTypes\" (\"Id\", \"Extension\", \"MimeType\", \"Chain\", \"Comment\") VALUES " +
-                "(1, '.jpg', 'image/jpeg', '', 'JPEG image file'), " +
-                "(2, '.png', 'image/png', '', 'PNG image file'), " +
-                "(3, '.gif', 'image/gif', '', 'GIF image file'), " +
-                "(4, '.mp4', 'video/mp4', '', 'MP4 video file'), " +
-                "(5, '.mov', 'video/quicktime', '', 'MOV video file'), " +
-                "(6, '.avi', 'video/x-msvideo', '', 'AVI video file'), " +
-                "(7, '.mkv', 'video/x-matroska', '', 'MKV video file'), " +
-                "(8, '.mp3', 'audio/mpeg', '', 'MP3 audio file'), " +
-                "(9, '.wav', 'audio/wav', '', 'WAV audio file'), " +
-                "(10, '.flac', 'audio/flac', '', 'FLAC audio file');");
+            migrationBuilder.Sql("INSERT INTO \"AllowedFileTypes\" (\"Id\", \"Extension\", \"MimeType\", \"Chain\", \"Comment\", \"AssetType\") VALUES " +
+                "(1, '.jpg', 'image/jpeg', '', 'JPEG image file', ''), " +
+                "(2, '.png', 'image/png', '', 'PNG image file', ''), " +
+                "(3, '.gif', 'image/gif', '', 'GIF image file', ''), " +
+                "(4, '.mp4', 'video/mp4', '', 'MP4 video file', ''), " +
+                "(5, '.mov', 'video/quicktime', '', 'MOV video file', ''), " +
+                "(6, '.avi', 'video/x-msvideo', '', 'AVI video file', ''), " +
+                "(7, '.mkv', 'video/x-matroska', '', 'MKV video file', ''), " +
+                "(8, '.mp3', 'audio/mpeg', '', 'MP3 audio file', ''), " +
+                "(9, '.wav', 'audio/wav', '', 'WAV audio file', ''), " +
+                "(10, '.flac', 'audio/flac', '', 'FLAC audio file', '');");
         }
 
         /// <inheritdoc />

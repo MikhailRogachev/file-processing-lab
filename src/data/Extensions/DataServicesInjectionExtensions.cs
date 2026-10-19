@@ -16,6 +16,7 @@ public static class DataServicesInjectionExtensions
 
         // repositories
         services.AddScoped<IMediaPackageRepository, MediaPackageRepository>();
+        services.AddScoped<IAllowedTypesRepository, AllowedTypesRepository>();
 
         return services;
     }

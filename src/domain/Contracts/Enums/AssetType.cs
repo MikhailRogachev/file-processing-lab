@@ -6,4 +6,5 @@ public enum AssetType
     Video = 1,
     Image = 2,
     Subtitle = 3,
+    Audio = 4
 }

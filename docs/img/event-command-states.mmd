@@ -1,0 +1,40 @@
+---
+title: Asset Changed Event
+---
+flowchart TD
+    %% 1. Ingestion & Event Layer
+    subgraph Ingestion ["1. Event Ingestion Layer"]
+        a1[File Uploaded to AWS S3] -->|S3 Event Notification| a2[AWS SQS Queue]
+        a2 -->|Consume Message| a3[SqsListener Service]
+    end
+
+    a3 --> filechangedevent{{Received FileChanged Event}}:::Event
+    filechangedevent --> getpackageident([Get Package Identifier]):::Action
+    getpackageident --> checkpackage{Is Package Exist?}
+    checkpackage -->|No| createpackage([Create Asset Package]):::Action
+    checkpackage -->|Yes| checkasset{Is Asset Exist?}
+    createpackage --> packagecreated{{Asset Package Created}}:::Event
+    packagecreated --> checkasset
+    checkasset -->|No| createasset([Create Asset]):::Action
+    
+
+
+
+
+
+
+
+
+    
+    %%Btest([Test]):::Action
+    %%Ctest{{Flow}}:::Event
+
+
+    
+
+
+
+
+    %% Styling
+    classDef Event fill:#ff8c1a,stroke:#000000,stroke-width:2px;
+    classDef Action fill:#00cc00,stroke:#008000,stroke-width:2px;

@@ -2,8 +2,9 @@
 
 public class S3SrtValidator(
     ILogger<S3SrtValidator> logger,
-    IAwsClientConnectionFactory awsClientFactory
-    ) : S3BaseValidator(logger, awsClientFactory)
+    IAwsClientConnectionFactory awsClientFactory,
+    IOptions<AwsOptions> options
+    ) : S3BaseValidator(logger, awsClientFactory, options)
 {
     public override string Name => "SrtFileProbe";
     protected override int StartByte => 0;

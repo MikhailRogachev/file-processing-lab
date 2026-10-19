@@ -4,10 +4,7 @@ ShowGreeting();
 
 var fileCollection = new List<FileItem>();
 var menuManager = new MenuManager();
-var target = ConnectionTarget.REMOTE;
-
-_ = menuManager.GetSamplesRootDirectory();
-
+var target = ConnectionTarget.LOCAL;
 var isRunning = true;
 
 while (isRunning)
@@ -33,7 +30,7 @@ while (isRunning)
     {
         await UploadFileAsync(CancellationToken.None);
     }
-    else if (key == "5")
+    else if (key == "4")
     {
         await ValidateFileAsync(CancellationToken.None);
     }
@@ -122,96 +119,135 @@ async Task GetFilesCollectionAsync(CancellationToken cancellationToken)
 
 async Task UploadFileAsync(CancellationToken cancelToken)
 {
+    if (target == ConnectionTarget.REMOTE)
+    {
+        ShowErrorMessage("The file upload is available for the LOCAL mode only.");
+        return;
+    }
 
-    var basef = menuManager.GetSamplesRootDirectory();
-    ShowSucceessMessage(basef, ConsoleColor.Blue);
+    try
+    {
 
-    //try
-    //{
-    //    Console.WriteLine(menuManager.FileCollectionMenu());
-    //    Console.WriteLine("Enter the file name to upload (from project) or Q to previous menu: ");
-    //    var fn = Console.ReadLine();
+        var menuExist = menuManager.GetTestDataFilesMenu();
 
-    //    if (!ValidateInput(fn, false)) { return; }
-    //    if (fn!.ToUpper() == KeySettings.QuitKey) { return; }
+        if (!menuExist)
+        {
+            ShowErrorMessage(menuManager.FileMenu);
+            return;
+        }
 
-    //    var response = await service.UploadFileAsync(fn!, CancellationToken.None);
+        ShowSucceessMessage(menuManager.FileMenu, ConsoleColor.DarkBlue);
 
-    //    if (!response)
-    //    {
-    //        ShowSucceessMessage("File is not uploaded", ConsoleColor.DarkRed);
-    //    }
-    //    else
-    //    {
-    //        ShowSucceessMessage("File is uploaded successfully", ConsoleColor.Green);
-    //    }
-    //}
-    //catch (Exception ex)
-    //{
-    //    var bld = new StringBuilder();
-    //    bld.AppendLine($"The Error occured during UploadFileAsync function");
-    //    bld.AppendLine($"Message: {ex.Message}, Error Type: {ex.GetType()}");
+        var fn = GetKeyValue("Please select number of the file to upload");
+        if (!ValidateInput(fn, false)) { return; }
+        if (IsQuit(fn!)) { return; }
 
-    //    ShowErrorMessage(bld.ToString());
-    //}
+        if (!int.TryParse(fn, out int index))
+        {
+            ShowErrorMessage("Invalid file number selected. Numbers allowed only.");
+            return;
+        }
+
+        var fileitem = menuManager.FileMenuItems.FirstOrDefault(p => p.Index == index);
+        if (fileitem == null)
+        {
+            ShowErrorMessage(string.Format("The file with number {0} is not found.", index));
+            return;
+        }
+
+        // start process
+        var service = new S3FileUpload(target);
+        var response = await service.RunRequestAsync(new S3RequestContext
+        {
+            BucketName = service.Bucket,
+            FileName = fileitem.FileName,
+            Path = fileitem.Path
+        }, cancelToken);
+
+        if (response.IsSuccess)
+        {
+            var bld = new StringBuilder();
+            bld.AppendLine(response.Message);
+            bld.AppendLine(response.Context!.ToString());
+
+            ShowSucceessMessage(bld.ToString(), ConsoleColor.DarkGreen);
+        }
+        else
+        {
+            ShowErrorMessage(response.Message);
+        }
+    }
+    catch (Exception ex)
+    {
+        var bld = new StringBuilder();
+        bld.AppendLine($"The Error occured during UploadFileAsync function");
+        bld.AppendLine($"Message: {ex.Message}, Error Type: {ex.GetType()}");
+
+        ShowErrorMessage(bld.ToString());
+    }
 }
 
 async Task ValidateFileAsync(CancellationToken cancellationToken)
 {
-    //try
-    //{
-    //    var bld = new StringBuilder();
+    try
+    {
+        var bld = new StringBuilder();
 
-    //    if (!fileCollection.Any())
-    //    {
-    //        bld.AppendLine("Please run menu Item 3");
-    //        bld.AppendLine("to get files collection from the Bucket");
+        if (!fileCollection.Any())
+        {
+            bld.AppendLine("Please run menu 'Get the list of files in the bucket.'");
+            bld.AppendLine("to get files collection from the Bucket");
 
-    //        ShowSucceessMessage(bld.ToString(), ConsoleColor.DarkRed);
+            ShowSucceessMessage(bld.ToString(), ConsoleColor.DarkRed);
 
-    //        return;
-    //    }
+            return;
+        }
 
-    //    bld.AppendLine("Files Collection to select file:");
+        bld.AppendLine("Files Collection to select file:");
 
-    //    foreach (var file in fileCollection)
-    //    {
-    //        bld.AppendLine(string.Format("|{0,-3}|    {1}", file.Index, file.FileName));
-    //    }
+        foreach (var file in fileCollection)
+        {
+            bld.AppendLine(string.Format("|{0,-3}|    {1}", file.Index, file.FileName));
+        }
 
-    //    Console.WriteLine(bld.ToString());
-    //    Console.WriteLine("Enter the number of the file to validate or Q to previous menu: ");
-    //    var fn = Console.ReadLine();
+        Console.WriteLine(bld.ToString());
+        var fn = GetKeyValue("Please select number of the file to validate");
+        if (!ValidateInput(fn, false)) { return; }
+        if (IsQuit(fn!)) { return; }
 
-    //    if (!ValidateInput(fn, false)) { return; }
-    //    if (fn!.ToUpper() == KeySettings.QuitKey) { return; }
+        if (!int.TryParse(fn, out int index))
+        {
+            ShowErrorMessage("Invalid file number selected. Numbers allowed only.");
+            return;
+        }
 
-    //    if (!int.TryParse(fn!, out int index))
-    //    {
-    //        ShowErrorMessage("The input value must be number");
-    //        return;
-    //    }
+        var fileitem = fileCollection.FirstOrDefault(p => p.Index == index);
+        if (fileitem == null)
+        {
+            ShowErrorMessage(string.Format("The file with number {0} is not found.", index));
+            return;
+        }
 
-    //    var item = fileCollection.FirstOrDefault(p => p.Index == index);
+        var service = new S3FileValidator();
+        var response = await service.ValidateFileAsync(fileitem.FileName, target, cancellationToken);
 
-    //    if (item == null)
-    //    {
-    //        ShowErrorMessage(string.Format("The file with index {0} doesn't exist", index));
-    //        return;
-    //    }
+        if (!service.IsValid)
+        {
+            ShowErrorMessage(response);
+            return;
+        }
 
-    //    var response = await validator.ValidateFileAsync(item.FileName, cancellationToken);
+        ShowSucceessMessage(response, ConsoleColor.DarkGreen);
 
-    //    ShowSucceessMessage(response);
-    //}
-    //catch (Exception ex)
-    //{
-    //    var bld = new StringBuilder();
-    //    bld.AppendLine($"The Error occured during ValidateFileAsync function");
-    //    bld.AppendLine($"Message: {ex.Message}, Error Type: {ex.GetType()}");
+    }
+    catch (Exception ex)
+    {
+        var bld = new StringBuilder();
+        bld.AppendLine($"The Error occured during ValidateFileAsync function");
+        bld.AppendLine($"Message: {ex.Message}, Error Type: {ex.GetType()}");
 
-    //    ShowErrorMessage(bld.ToString());
-    //}
+        ShowErrorMessage(bld.ToString());
+    }
 }
 
 string? GetKeyValue(string description)

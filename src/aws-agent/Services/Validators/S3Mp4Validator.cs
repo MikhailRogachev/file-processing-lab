@@ -2,8 +2,9 @@
 
 public class S3Mp4Validator(
     ILogger<S3Mp4Validator> logger,
-    IAwsClientConnectionFactory awsClientFactory
-    ) : S3BaseValidator(logger, awsClientFactory)
+    IAwsClientConnectionFactory awsClientFactory,
+    IOptions<AwsOptions> options
+    ) : S3BaseValidator(logger, awsClientFactory, options)
 {
 
     public override string Name => "Mp4FileProbe";

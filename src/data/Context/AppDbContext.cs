@@ -51,6 +51,7 @@ public class AppDbContext : DbContext, IUnitOfWork
             entity.Property(e => e.Id).ValueGeneratedNever();
             entity.Property(e => e.Filename).HasMaxLength(550).IsRequired();
             entity.Property(e => e.AssetType).HasConversion(new EnumToStringConverter<AssetType>()).HasMaxLength(20);
+            entity.Property(e => e.CurrentState).HasConversion(new EnumToStringConverter<State>()).HasMaxLength(20);
             entity.Property(e => e.Etag).HasMaxLength(100);
 
             entity.HasIndex(e => new { e.MediaPackageId, e.Filename }).IsUnique();
@@ -83,7 +84,7 @@ public class AppDbContext : DbContext, IUnitOfWork
             entity.Property(e => e.MimeType).HasMaxLength(30);
             entity.Property(e => e.Chain).HasMaxLength(200);
             entity.Property(e => e.Comment).HasMaxLength(800);
-            entity.Property(e => e.AssetType).HasConversion(new EnumToStringConverter<AssetType>()).HasMaxLength(20);
+            entity.Property(e => e.AssetType).HasConversion(new EnumToStringConverter<AssetType>()).HasMaxLength(10);
 
             entity.HasKey(e => e.Id);
             entity.HasIndex(e => e.Extension).IsUnique();
