@@ -14,4 +14,7 @@ public static class ConnectionSettings
     public const string REMOTE_PROFILE_FILENAME = @"C:\Users\mikrog\.aws\appcredentials";
     public const string REMOTE_BUCKET_NAME = "dev-makalu-dev-playoutassets";
     public const string REMOTE_FOLDER_NAME = "Clips/Test-Example/Rpgachev/";
+
+    public const string AWS_META_IDENTIFIER_FIELD = "x-amz-meta-identifier";
+    public const string AWS_META_PRIORITY_FIELD = "x-amz-meta-priority";
 }

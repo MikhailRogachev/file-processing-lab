@@ -6,7 +6,7 @@ public record FileIngestedEvent(
     DateTimeOffset CreatedAt,
     string Identifier,
     string BucketName,
-    string FullFileName,
+    string FileName,
     long FileSize,
     int Priority,
     string etag

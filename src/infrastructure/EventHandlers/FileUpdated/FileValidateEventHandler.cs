@@ -1,4 +1,5 @@
 ﻿using domain.Dtos;
+using domain.Models.References;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace infrastructure.EventHandlers.FileUpdated;
@@ -12,57 +13,60 @@ public class FileValidateEventHandler(
     public async Task HandleAsync(ValidateMediaAssetEvent @event, CancellationToken cancellationToken)
     {
         logger.LogDebug("Validating Asset {fn}", @event.FileName);
-        var extension = Path.GetExtension(@event.FileName);
+        var assetMediaType = await GetAllowedTypeAsync(@event.FileName, cancellationToken);
+
 
         try
         {
             using var scope = scopeFactory.CreateScope();
-            var validator = GetValidator(scope, extension);
-            var packageRepository = scope.ServiceProvider.GetRequiredService<IMediaPackageRepository>();
-            var typesRepository = scope.ServiceProvider.GetRequiredService<IAllowedTypesRepository>();
-
-            var mediatype = await typesRepository.GetAsync(extension, cancellationToken);
-            if (mediatype == null)
-            {
-                throw new ArgumentException($"The extension is not recognized for the file {@event.FileName}");
-            }
-
-            // get package and job
-            var mediaPackage = await packageRepository.GetAsync(@event.AggregateId, cancellationToken);
-            var asset = mediaPackage!.Assets.FirstOrDefault(p => p.Filename == @event.FileName);
+            var validator = GetValidator(scope, assetMediaType.Extension);
+            var repository = scope.ServiceProvider.GetRequiredService<IMediaPackageRepository>();
 
             // validate asset
             var validationResult = await validator.ValidateAsync(new FileProbeContext
             (
                 validator.BucketName,
                 @event.FileName,
-                extension,
+                assetMediaType.Extension,
                 string.Empty
             ), cancellationToken);
+
+            // get package and job
+            var mediaPackage = await repository.GetAsync(@event.AggregateId, cancellationToken);
+            var asset = mediaPackage!.Assets.FirstOrDefault(p => p.Filename == @event.FileName);
 
             // validation result processing
             if (validationResult)
             {
-                asset!.Validated(mediatype.AssetType);
-                await packageRepository.UnitOfWork.SaveAsync(cancellationToken);
+                asset!.Validated(assetMediaType.AssetType);
             }
             else
             {
-
+                asset!.ValidationFailed($"The file {@event.FileName} has invalid format.");
             }
+
+            await repository.UnitOfWork.SaveAsync(cancellationToken);
         }
         catch (Exception ex)
         {
+            logger.LogError(ex, "The error occured during validating file {fn}: {msg}", @event.FileName, ex.Message);
+            throw;
         }
     }
 
-    private IFileProbeValidator GetValidator(IServiceScope scope, string extension) => extension switch
+    private async Task<AllowedFileType> GetAllowedTypeAsync(string filename, CancellationToken cancellationToken)
     {
-        FileFormatKeys.MP4 => scope.ServiceProvider.GetRequiredKeyedService<IFileProbeValidator>(FileFormatKeys.MP4),
-        FileFormatKeys.MXF => scope.ServiceProvider.GetRequiredKeyedService<IFileProbeValidator>(FileFormatKeys.MXF),
-        FileFormatKeys.SRT => scope.ServiceProvider.GetRequiredKeyedService<IFileProbeValidator>(FileFormatKeys.SRT),
-        FileFormatKeys.STL => scope.ServiceProvider.GetRequiredKeyedService<IFileProbeValidator>(FileFormatKeys.STL),
-        _ => throw new NotSupportedException()
-    };
+        using var scope = scopeFactory.CreateScope();
+        var service = scope.ServiceProvider.GetRequiredService<IMediaTypeValidator>();
+        var item = await service.GetAllowedAssetTypeAsync(filename, cancellationToken);
+
+        return item ?? throw new InvalidOperationException($"The file {filename} is not allowed for processing");
+    }
+
+    private static IFileProbeValidator GetValidator(IServiceScope scope, string extension)
+    {
+        var validator = scope.ServiceProvider.GetKeyedService<IFileProbeValidator>(extension);
+        return validator ?? throw new NotSupportedException($"No file probe validator registered for extension '{extension}'.");
+    }
 
 }

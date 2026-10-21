@@ -1,4 +1,5 @@
-﻿using aws_agent.Extensions;
+﻿using Amazon.S3;
+using aws_agent.Extensions;
 using domain.Extensions;
 
 namespace aws_agent.Services;
@@ -7,7 +8,8 @@ public class SqsMessageConsumer : IMessageConsumer
 {
     private readonly ILogger<SqsMessageConsumer> _logger;
     private readonly string _queueName;
-    private readonly IAmazonSQS _client;
+    private readonly IAmazonSQS _amazonSqs;
+    private readonly IAmazonS3 _amazonS3;
 
     private string? _cachedQueueUrl;
 
@@ -18,7 +20,8 @@ public class SqsMessageConsumer : IMessageConsumer
     {
         _logger = logger;
         _queueName = awsClientFactory.SqsQueueName;
-        _client = awsClientFactory.SqsClient();
+        _amazonSqs = awsClientFactory.SqsClient();
+        _amazonS3 = awsClientFactory.S3Client();
     }
 
     /// <summary>
@@ -48,7 +51,7 @@ public class SqsMessageConsumer : IMessageConsumer
 
             _logger.LogDebug("Requesting messages from the SQS queue - {queue}", queueUrl);
 
-            var response = await _client.ReceiveMessageAsync(request, cancellationToken);
+            var response = await _amazonSqs.ReceiveMessageAsync(request, cancellationToken);
 
             if (response == null || response.HttpStatusCode != System.Net.HttpStatusCode.OK)
             {
@@ -61,7 +64,10 @@ public class SqsMessageConsumer : IMessageConsumer
 
                 foreach (var message in response.Messages)
                 {
-                    consumedList.Add(message.ConvertToMessageConsumed());
+                    var msg = message.ConvertToMessageConsumed();
+                    await SetFileProperiesAsync(msg, cancellationToken);
+
+                    consumedList.Add(msg);
                 }
 
                 return consumedList;
@@ -109,7 +115,7 @@ public class SqsMessageConsumer : IMessageConsumer
                     }).ToList()
                 };
 
-                var response = await _client.DeleteMessageBatchAsync(deleteRequest, cancellationToken);
+                var response = await _amazonSqs.DeleteMessageBatchAsync(deleteRequest, cancellationToken);
 
                 if (response.Failed?.Count > 0)
                 {
@@ -157,7 +163,7 @@ public class SqsMessageConsumer : IMessageConsumer
         if (!string.IsNullOrWhiteSpace(_cachedQueueUrl))
             return _cachedQueueUrl;
 
-        var response = await _client.GetQueueUrlAsync(new GetQueueUrlRequest
+        var response = await _amazonSqs.GetQueueUrlAsync(new GetQueueUrlRequest
         {
             QueueName = _queueName,
         });
@@ -165,6 +171,24 @@ public class SqsMessageConsumer : IMessageConsumer
         _cachedQueueUrl = response.QueueUrl;
 
         return _cachedQueueUrl;
+    }
+
+    private async Task SetFileProperiesAsync(MessageConsumed msg, CancellationToken cancellationToken)
+    {
+        var metadataResponse = await _amazonS3.GetObjectMetadataAsync(msg.Bucket, msg.FileName);
+        var identifier = metadataResponse.Metadata[FieldNames.AWS_META_IDENTIFIER_FIELD];
+        var priorityValue = metadataResponse.Metadata[FieldNames.AWS_META_PRIORITY_FIELD];
+
+        if (!int.TryParse(priorityValue, out int priority))
+        {
+            msg.Priority = 10;
+        }
+        else
+        {
+            msg.Priority = priority;
+        }
+
+        msg.Identifier = identifier;
     }
 
     /// <summary>

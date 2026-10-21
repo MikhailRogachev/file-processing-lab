@@ -11,3 +11,14 @@ P.id
 , A.[Priority]
 , A.[Version]
 FROM MediaPackages AS P INNER JOIN MediaAssets AS A ON P.Id = A.MediaPackageId
+
+
+SELECT
+Id
+, AggregateId
+, [Status]
+, Content
+, ContentType
+, ProcessedAt
+, Repeated
+FROM [dbo].[OutboxMessages]

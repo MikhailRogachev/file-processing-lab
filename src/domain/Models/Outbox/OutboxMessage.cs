@@ -3,7 +3,7 @@
 public class OutboxMessage
 {
     public Guid Id { get; set; }
-    public Guid? ReferenceId { get; set; }
+    public Guid? AggregateId { get; set; }
     public OutboxMessageStatus Status { get; set; }
     public string Content { get; set; }
     public string ContentType { get; set; }

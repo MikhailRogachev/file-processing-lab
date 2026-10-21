@@ -7,4 +7,6 @@ public class S3RequestContext
     public string BucketName { get; set; } = string.Empty;
     public string PackageIdentifier { get; set; } = string.Empty;
     public int Priority { get; set; } = 3;
+
+    public string FullFileName() => System.IO.Path.Combine(Path, FileName);
 }

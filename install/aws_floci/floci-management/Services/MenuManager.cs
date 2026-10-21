@@ -10,6 +10,7 @@ public class MenuManager
         new AppManagerItem("2", "Get the list of files in the bucket."),
         new AppManagerItem("3", "Upload File to S3 bucket"),
         new AppManagerItem("4", "Validate File"),
+        new AppManagerItem("5", "Get Selected file MetaData"),
         new AppManagerItem("Q", "Quit the application")
     };
     private readonly FileMenuBuilder _fileMenuBuilder = new FileMenuBuilder();

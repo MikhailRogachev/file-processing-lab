@@ -34,6 +34,10 @@ while (isRunning)
     {
         await ValidateFileAsync(CancellationToken.None);
     }
+    else if (key == "5")
+    {
+        await GetMedataAsync(CancellationToken.None);
+    }
 }
 
 #region private methods and functions
@@ -156,7 +160,19 @@ async Task UploadFileAsync(CancellationToken cancelToken)
         }
 
         // add file identifier
-        var fi = GetKeyValue("Entry File Identifier (leave empty if it's not applicable):");
+        var fi = GetKeyValue("Entry File Identifier (leave empty if it's not applicable, click Q to cancel)");
+        if (IsQuit(fi!)) { return; }
+
+        // add priority
+        var fp = GetKeyValue("Entry processing Priority (number, default value is 3, click Q to cancel)");
+        if (IsQuit(fp!)) { return; }
+        if (!ValidateInput(fp, false)) { return; }
+
+        if (!int.TryParse(fn, out int priority))
+        {
+            ShowErrorMessage("Invalid file number selected. Numbers allowed only.");
+            return;
+        }
 
         // start process
         var service = new S3FileUpload(target);
@@ -165,7 +181,8 @@ async Task UploadFileAsync(CancellationToken cancelToken)
             BucketName = service.Bucket,
             FileName = fileitem.FileName,
             Path = fileitem.Path,
-            PackageIdentifier = !string.IsNullOrWhiteSpace(fi) ? fi : string.Empty
+            PackageIdentifier = !string.IsNullOrWhiteSpace(fi) ? fi : string.Empty,
+            Priority = priority
         }, cancelToken);
 
         if (response.IsSuccess)
@@ -242,6 +259,73 @@ async Task ValidateFileAsync(CancellationToken cancellationToken)
         }
 
         ShowSucceessMessage(response, ConsoleColor.DarkGreen);
+
+    }
+    catch (Exception ex)
+    {
+        var bld = new StringBuilder();
+        bld.AppendLine($"The Error occured during ValidateFileAsync function");
+        bld.AppendLine($"Message: {ex.Message}, Error Type: {ex.GetType()}");
+
+        ShowErrorMessage(bld.ToString());
+    }
+}
+
+async Task GetMedataAsync(CancellationToken cancellationToken)
+{
+    try
+    {
+        var bld = new StringBuilder();
+
+        if (!fileCollection.Any())
+        {
+            bld.AppendLine("Please run menu 'Get the list of files in the bucket.'");
+            bld.AppendLine("to get files collection from the Bucket");
+
+            ShowSucceessMessage(bld.ToString(), ConsoleColor.DarkRed);
+
+            return;
+        }
+
+        bld.AppendLine("Files Collection to select file:");
+
+        foreach (var file in fileCollection)
+        {
+            bld.AppendLine(string.Format("|{0,-3}|    {1}", file.Index, file.FileName));
+        }
+
+        Console.WriteLine(bld.ToString());
+        var fn = GetKeyValue("Please select number of the file to retrieve metadata");
+        if (!ValidateInput(fn, false)) { return; }
+        if (IsQuit(fn!)) { return; }
+
+        if (!int.TryParse(fn, out int index))
+        {
+            ShowErrorMessage("Invalid file number selected. Numbers allowed only.");
+            return;
+        }
+
+        var fileitem = fileCollection.FirstOrDefault(p => p.Index == index);
+        if (fileitem == null)
+        {
+            ShowErrorMessage(string.Format("The file with number {0} is not found.", index));
+            return;
+        }
+
+        var service = new S3MetaData(target);
+        var response = await service.RunRequestAsync(new S3RequestContext
+        {
+            BucketName = service.Bucket,
+            FileName = fileitem.FileName
+        }, cancellationToken);
+
+        if (!response.IsSuccess)
+        {
+            ShowErrorMessage(response.Message);
+            return;
+        }
+
+        ShowSucceessMessage(response.Context!, ConsoleColor.DarkGreen);
 
     }
     catch (Exception ex)

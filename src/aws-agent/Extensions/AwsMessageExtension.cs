@@ -15,20 +15,19 @@ public static class AwsMessageExtension
         var eventName = record.GetEventName();
         var bucketName = bucket.GetElementStringValue(FieldNames.NAME_FIELD_NAME);
         var key = obj.GetElementStringValue(FieldNames.KEY_FIELD_NAME);
-        var ingestContext = GetFileIngestContext(key);
         var size = obj.GetElementLongValue(FieldNames.SIZE_FIELD_NAME);
         var etag = obj.GetElementStringValue(FieldNames.ETAG_FIELD_NAME);
 
-        return new MessageConsumed(
-            message.MessageId,
-            message.ReceiptHandle,
-            eventName,
-            bucketName,
-            ingestContext.FileName,
-            size,
-            ingestContext.Priority,
-            ingestContext.PackageIdentifier,
-            etag);
+        return new MessageConsumed
+        {
+            MessageId = message.MessageId,
+            ReceiptHandle = message.ReceiptHandle,
+            EventName = eventName,
+            Bucket = bucketName,
+            FileName = key,
+            Etag = etag,
+            FileSize = size
+        };
     }
 
 
@@ -44,7 +43,6 @@ public static class AwsMessageExtension
         return records[0];
     }
 
-
     public static JsonElement GetElement(this JsonElement jsonSource, string elementName)
     {
         if (!jsonSource.TryGetProperty(elementName, out JsonElement value))
@@ -54,7 +52,6 @@ public static class AwsMessageExtension
 
         return value;
     }
-
 
     public static string GetEventName(this JsonElement jsonSource)
     {
@@ -72,22 +69,15 @@ public static class AwsMessageExtension
         return "Unknown";
     }
 
-
     public static string GetElementStringValue(this JsonElement jsonSource, string fieldName)
     {
         var value = jsonSource.GetElement(fieldName);
         return value.ToString();
     }
 
-
     public static long GetElementLongValue(this JsonElement jsonSource, string fieldName)
     {
         var value = jsonSource.GetElement(fieldName);
         return value.GetInt64();
-    }
-
-    public static FileIngestContext GetFileIngestContext(string src)
-    {
-        return JsonSerializer.Deserialize<FileIngestContext>(src)!;
     }
 }

@@ -5,6 +5,7 @@ public enum AssetStatus
     Unknown,
     Created,
     Validated,
+    ValidationFailed,
     Running,
     Completed,
     Failed,

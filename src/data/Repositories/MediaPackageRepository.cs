@@ -58,10 +58,10 @@ public class MediaPackageRepository(
     /// </remarks>
     public async Task<MediaPackage> CreateAsync(AssetCreateContext context, CancellationToken cancellationToken)
     {
-        if (string.IsNullOrWhiteSpace(context.FullFileName))
-            throw new ArgumentException("Filename cannot be null or empty.", nameof(context.FullFileName));
+        if (string.IsNullOrWhiteSpace(context.FileName))
+            throw new ArgumentException("Filename cannot be null or empty.", nameof(context.FileName));
 
-        var identifier = !string.IsNullOrWhiteSpace(context.identifier) ? context.identifier : context.FullFileName.CreateAssetIdentificator();
+        var identifier = !string.IsNullOrWhiteSpace(context.identifier) ? context.identifier : context.FileName.CreateAssetIdentificator();
         var package = await GetAsync(identifier, cancellationToken);
 
         if (package == null)

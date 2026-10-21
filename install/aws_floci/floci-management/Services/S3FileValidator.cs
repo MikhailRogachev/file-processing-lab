@@ -9,7 +9,6 @@ public class S3FileValidator
     public async Task<string> ValidateFileAsync(string filename, ConnectionTarget target, CancellationToken cancellationToken)
     {
         var extension = Path.GetExtension(filename);
-
         if (string.IsNullOrEmpty(extension))
         {
             throw new ArgumentNullException(string.Format("The extension for the file {0} is nor found.", filename));

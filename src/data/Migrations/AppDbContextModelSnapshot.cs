@@ -112,6 +112,9 @@ namespace data.Migrations
                     b.Property<Guid>("Id")
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<Guid?>("AggregateId")
+                        .HasColumnType("uniqueidentifier");
+
                     b.Property<string>("Content")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -133,9 +136,6 @@ namespace data.Migrations
 
                     b.Property<DateTimeOffset?>("ProcessedAt")
                         .HasColumnType("datetimeoffset");
-
-                    b.Property<Guid?>("ReferenceId")
-                        .HasColumnType("uniqueidentifier");
 
                     b.Property<int>("Repeated")
                         .HasColumnType("int");

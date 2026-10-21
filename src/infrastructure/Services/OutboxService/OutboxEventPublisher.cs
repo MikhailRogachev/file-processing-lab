@@ -14,7 +14,7 @@ public class OutboxEventPublisher(
 {
 
     private readonly string _requestQuery = @"select top(1) [Id]
-              ,[ReferenceId]
+              ,[AggregateId]
               ,[Status]
               ,[Content]
               ,[ContentType]

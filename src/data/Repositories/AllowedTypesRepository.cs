@@ -17,4 +17,9 @@ public class AllowedTypesRepository(AppDbContext context) : IAllowedTypesReposit
             .AsNoTracking()
             .FirstOrDefaultAsync(p => p.Extension.ToLower() == extension.ToLower());
     }
+
+    public async Task<IList<AllowedFileType>> GetCollectionAsync(CancellationToken cancellationToken)
+    {
+        return await context.AllowedFileTypes.AsNoTracking().ToListAsync(cancellationToken);
+    }
 }

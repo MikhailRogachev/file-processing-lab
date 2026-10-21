@@ -21,7 +21,7 @@ public class OutboxMessageBuildService(ILogger<OutboxMessageBuildService> logger
             var outboxMessage = new OutboxMessage
             {
                 Id = @event.Id,
-                ReferenceId = @event.AggregateId,
+                AggregateId = @event.AggregateId,
                 Status = OutboxMessageStatus.Queued,
                 Content = JsonSerializer.Serialize(@event, @event.GetType()),
                 ContentType = @event.GetType().FullName ?? string.Empty,

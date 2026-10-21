@@ -44,9 +44,12 @@ public class MediaAsset : BaseEntity
         UpdatedAt = DateTimeOffset.UtcNow;
     }
 
-    public void Failed()
+    public void ValidationFailed(string message, string details = "")
     {
-
+        CurrentStatus = AssetStatus.ValidationFailed;
+        UpdatedAt = DateTimeOffset.UtcNow;
+        Result = message;
+        Details = !string.IsNullOrWhiteSpace(details) ? details : message;
     }
 
     #endregion

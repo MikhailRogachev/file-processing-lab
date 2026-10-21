@@ -10,7 +10,7 @@ var configuration = builder.Configuration!;
 var services = builder.Services;
 
 // Services
-services.AddScoped<IMediaFileValidator, MediaFileValidator>();
+services.AddSingleton<IMediaTypeValidator, MediaTypeValidator>();
 services.AddScoped<IOutboxMessageBuilderService, OutboxMessageBuildService>();
 
 // aws consumer

@@ -10,7 +10,7 @@ public class FileIngestedEventHandler(
 {
     public async Task HandleAsync(FileIngestedEvent @event, CancellationToken cancellationToken)
     {
-        logger.LogInformation("Received event FileChanged for the file {fn}", @event.FullFileName);
+        logger.LogInformation("Received event FileChanged for the file {fn}", @event.FileName);
 
         try
         {
@@ -19,7 +19,7 @@ public class FileIngestedEventHandler(
 
             await repository.CreateAsync(new AssetCreateContext(
                 @event.Identifier,
-                @event.FullFileName,
+                @event.FileName,
                 @event.FileSize,
                 @event.Priority,
                 @event.etag

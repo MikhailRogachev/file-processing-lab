@@ -12,6 +12,9 @@ public static class FieldNames
     public const string SIZE_FIELD_NAME = "size";
     public const string ETAG_FIELD_NAME = "eTag";
 
+    public const string AWS_META_IDENTIFIER_FIELD = "x-amz-meta-identifier";
+    public const string AWS_META_PRIORITY_FIELD = "x-amz-meta-priority";
+
     public const string UpdatedEventName = "Updated";
     public const string DeletedEventName = "Deleted";
 }

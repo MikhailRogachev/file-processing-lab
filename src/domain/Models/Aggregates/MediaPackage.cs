@@ -20,11 +20,11 @@ public class MediaPackage : BaseEntity
     {
         UpdatedAt = DateTimeOffset.UtcNow;
 
-        var asset = Assets.FirstOrDefault(p => p.Filename == context.FullFileName);
+        var asset = Assets.FirstOrDefault(p => p.Filename == context.FileName);
 
         if (asset == null)
         {
-            Assets.Add(new MediaAsset(Id, context.FullFileName)
+            Assets.Add(new MediaAsset(Id, context.FileName)
             {
                 Id = Guid.NewGuid(),
                 Size = context.Size,
@@ -48,7 +48,7 @@ public class MediaPackage : BaseEntity
             asset.UpdatedAt = DateTimeOffset.UtcNow;
         }
 
-        AddEvents(new ValidateMediaAssetEvent(Guid.NewGuid(), Id, DateTimeOffset.UtcNow, context.FullFileName));
+        AddEvents(new ValidateMediaAssetEvent(Guid.NewGuid(), Id, DateTimeOffset.UtcNow, context.FileName));
     }
 
     #endregion

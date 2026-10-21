@@ -49,12 +49,12 @@ public class SqsListener(
                                 DateTimeOffset.UtcNow,
                                 message.Identifier,
                                 message.Bucket,
-                                message.FullFileName,
+                                message.FileName,
                                 message.FileSize,
                                 message.Priority,
                                 message.Etag), stoppingToken);
 
-                            logger.LogDebug("Published message 'FileChanged' for the file {fn}", message.FullFileName);
+                            logger.LogDebug("Published message 'FileChanged' for the file {fn}", message.FileName);
                         }
                         //else if (message.EventName == FieldNames.DeletedEventName)
                         //{
@@ -79,7 +79,7 @@ public class SqsListener(
                     {
                         logger.LogError(ex, "Failed to publish RabbitMQ event {en} for the file {fn} with the identifier {id}",
                             message.EventName,
-                            message.FullFileName,
+                            message.FileName,
                             message.Identifier);
 
                     }
