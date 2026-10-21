@@ -1,11 +1,13 @@
 ﻿namespace domain.Dtos;
 
-public record QueueMessageConsumed(
+public record MessageConsumed(
     string MessageId,
     string ReceiptHandle,
     string EventName,
     string Bucket,
-    string ObjectKey,
-    long ObjectSize,
+    string FullFileName,
+    long FileSize,
+    int Priority,
+    string Identifier,
     string Etag
     );

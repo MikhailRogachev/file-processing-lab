@@ -2,6 +2,6 @@
 
 public interface IMessageConsumer
 {
-    Task<IList<QueueMessageConsumed>> ReceiveMessageAsync(CancellationToken cancellationToken);
-    Task RemoveMessagesAsync(List<QueueMessageConsumed> messages, CancellationToken cancellationToken);
+    Task<IList<MessageConsumed>> ReceiveMessageAsync(CancellationToken cancellationToken);
+    Task RemoveMessagesAsync(List<MessageConsumed> messages, CancellationToken cancellationToken);
 }

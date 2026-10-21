@@ -20,8 +20,7 @@ public static class ServicesInjection
 
 
         // eventHandles registration
-        services.AddScoped<IEventHandler<FileUpdatedEvent>, FileChangedEventHandler>();
-        services.AddScoped<IEventHandler<FileDeletedEvent>, FileDeletedEventHandler>();
+        services.AddScoped<IEventHandler<FileIngestedEvent>, FileIngestedEventHandler>();
         services.AddScoped<IEventHandler<ValidateMediaAssetEvent>, FileValidateEventHandler>();
 
         // add background service

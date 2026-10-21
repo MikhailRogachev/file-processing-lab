@@ -23,7 +23,7 @@ public class OutboxEventPublisher(
               ,[LastUpdatedAt]
               ,[ProcessedAt]
               ,[ErrorMessage]
-           from [Commands] WITH (UPDLOCK, READPAST) 
+           from [OutboxMessages] WITH (UPDLOCK, READPAST) 
            where ProcessedAt IS NULL  
            order by [LastUpdatedAt] ASC";
 
@@ -56,7 +56,7 @@ public class OutboxEventPublisher(
 
         try
         {
-            var message = await appDbContext.Commands.FromSqlRaw(_requestQuery).FirstOrDefaultAsync();
+            var message = await appDbContext.OutboxMessages.FromSqlRaw(_requestQuery).FirstOrDefaultAsync();
 
             if (message == null)
             {
@@ -77,7 +77,7 @@ public class OutboxEventPublisher(
 
                 await publisher.PublishAsync(obj, PublisherExchangeName, RoutingKeys.COMMANDS_ROUTE_KEY, cancellationToken);
 
-                appDbContext.Commands.Remove(message);
+                appDbContext.OutboxMessages.Remove(message);
             }
 
             await appDbContext.SaveChangesAsync();

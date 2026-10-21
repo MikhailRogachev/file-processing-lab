@@ -1,8 +1,6 @@
-﻿using domain.Models.Commands;
-
-namespace domain.Interfaces.Outbox;
+﻿namespace domain.Interfaces.Outbox;
 
 public interface IOutboxMessageBuilderService
 {
-    IEnumerable<Command> Build(IEnumerable<IEvent> eventSource);
+    IEnumerable<OutboxMessage> Build(IEnumerable<IEvent> eventSource);
 }

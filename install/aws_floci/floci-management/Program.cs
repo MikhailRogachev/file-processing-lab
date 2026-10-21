@@ -155,13 +155,17 @@ async Task UploadFileAsync(CancellationToken cancelToken)
             return;
         }
 
+        // add file identifier
+        var fi = GetKeyValue("Entry File Identifier (leave empty if it's not applicable):");
+
         // start process
         var service = new S3FileUpload(target);
         var response = await service.RunRequestAsync(new S3RequestContext
         {
             BucketName = service.Bucket,
             FileName = fileitem.FileName,
-            Path = fileitem.Path
+            Path = fileitem.Path,
+            PackageIdentifier = !string.IsNullOrWhiteSpace(fi) ? fi : string.Empty
         }, cancelToken);
 
         if (response.IsSuccess)

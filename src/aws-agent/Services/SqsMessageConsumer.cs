@@ -38,7 +38,7 @@ public class SqsMessageConsumer : IMessageConsumer
     /// <exception cref="InvalidCastException">
     /// Thrown downstream when an S3 event payload is missing required schema fields during conversion.
     /// </exception>
-    public async Task<IList<QueueMessageConsumed>> ReceiveMessageAsync(CancellationToken cancellationToken)
+    public async Task<IList<MessageConsumed>> ReceiveMessageAsync(CancellationToken cancellationToken)
     {
         try
         {
@@ -57,7 +57,7 @@ public class SqsMessageConsumer : IMessageConsumer
 
             if (response.Messages.IsAny())
             {
-                var consumedList = new List<QueueMessageConsumed>();
+                var consumedList = new List<MessageConsumed>();
 
                 foreach (var message in response.Messages)
                 {
@@ -67,7 +67,7 @@ public class SqsMessageConsumer : IMessageConsumer
                 return consumedList;
             }
 
-            return new List<QueueMessageConsumed>();
+            return new List<MessageConsumed>();
 
         }
         catch (Exception ex)
@@ -80,7 +80,7 @@ public class SqsMessageConsumer : IMessageConsumer
     /// <summary>
     /// Asynchronously removes a batch of consumed messages from the SQS queue using their receipt handles.
     /// </summary>
-    /// <param name="messages">A collection of <see cref="QueueMessageConsumed"/> objects containing receipt handles of messages to delete.</param>
+    /// <param name="messages">A collection of <see cref="MessageConsumed"/> objects containing receipt handles of messages to delete.</param>
     /// <param name="cancellationToken">A <see cref="CancellationToken"/> to observe while waiting for the task to complete.</param>
     /// <returns>A <see cref="Task"/> representing the asynchronous deletion operation.</returns>
     /// <exception cref="ReceiptHandleIsInvalidException">
@@ -89,7 +89,7 @@ public class SqsMessageConsumer : IMessageConsumer
     /// <exception cref="AmazonSQSException">
     /// Thrown when an error occurs while communicating with the AWS SQS service during message deletion.
     /// </exception>
-    public async Task RemoveMessagesAsync(List<QueueMessageConsumed> messages, CancellationToken cancellationToken)
+    public async Task RemoveMessagesAsync(List<MessageConsumed> messages, CancellationToken cancellationToken)
     {
         if (!messages.IsAny())
             return;

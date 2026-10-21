@@ -1,10 +1,10 @@
-﻿namespace domain.Models.Commands;
+﻿namespace domain.Models.Outbox;
 
-public class Command
+public class OutboxMessage
 {
     public Guid Id { get; set; }
     public Guid? ReferenceId { get; set; }
-    public CommandStatus Status { get; set; }
+    public OutboxMessageStatus Status { get; set; }
     public string Content { get; set; }
     public string ContentType { get; set; }
     public int Repeated { get; set; } = 0;

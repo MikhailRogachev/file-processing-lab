@@ -21,13 +21,14 @@ public class FileValidateEventHandler(
             var packageRepository = scope.ServiceProvider.GetRequiredService<IMediaPackageRepository>();
             var typesRepository = scope.ServiceProvider.GetRequiredService<IAllowedTypesRepository>();
 
-            if (await typesRepository.GetAsync(extension, cancellationToken) == null)
+            var mediatype = await typesRepository.GetAsync(extension, cancellationToken);
+            if (mediatype == null)
             {
                 throw new ArgumentException($"The extension is not recognized for the file {@event.FileName}");
             }
 
             // get package and job
-            var mediaPackage = await packageRepository.GetAsync(@event.ReferenceId, cancellationToken);
+            var mediaPackage = await packageRepository.GetAsync(@event.AggregateId, cancellationToken);
             var asset = mediaPackage!.Assets.FirstOrDefault(p => p.Filename == @event.FileName);
 
             // validate asset
@@ -42,9 +43,8 @@ public class FileValidateEventHandler(
             // validation result processing
             if (validationResult)
             {
-                asset!.CurrentState = domain.Contracts.Enums.State.Validated;
-                asset.UpdatedAt = DateTimeOffset.UtcNow;
-
+                asset!.Validated(mediatype.AssetType);
+                await packageRepository.UnitOfWork.SaveAsync(cancellationToken);
             }
             else
             {

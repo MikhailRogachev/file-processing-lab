@@ -1,5 +1,6 @@
 ﻿using System.Net;
 using System.Text;
+using System.Text.Json;
 
 namespace floci_management.Services;
 
@@ -8,13 +9,14 @@ public class S3FileUpload(ConnectionTarget target) : AwsBaseService<string>(targ
     protected override async Task<string> GetRequestResultAsync(S3RequestContext context, CancellationToken cancellationToken)
     {
         using var fileStream = File.OpenRead(Path.Combine(context.Path, context.FileName));
+        var contextBody = JsonSerializer.Serialize(context);
 
         var request = new PutObjectRequest
         {
             BucketName = context.BucketName,
-            Key = Path.Combine(context.Path, context.FileName),
+            Key = contextBody, //Path.Combine(context.Path, context.FileName),
             InputStream = fileStream,
-            ChecksumAlgorithm = ChecksumAlgorithm.SHA256
+            ChecksumAlgorithm = ChecksumAlgorithm.SHA256,
         };
 
         var response = await Client().PutObjectAsync(request, cancellationToken);

@@ -1,6 +1,6 @@
 ﻿namespace domain.Contracts.Enums;
 
-public enum State
+public enum AssetStatus
 {
     Unknown,
     Created,

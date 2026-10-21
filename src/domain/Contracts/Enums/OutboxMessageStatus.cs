@@ -1,6 +1,6 @@
 ﻿namespace domain.Contracts.Enums;
 
-public enum CommandStatus
+public enum OutboxMessageStatus
 {
     Created,
     Queued,

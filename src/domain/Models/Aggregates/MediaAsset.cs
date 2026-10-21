@@ -1,15 +1,29 @@
-﻿namespace domain.Models.Jobs;
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace domain.Models.Aggregates;
 
 public class MediaAsset : BaseEntity
 {
     public string Filename { get; set; } = string.Empty;
+
     public AssetType AssetType { get; set; }
-    public State CurrentState { get; set; }
+
+    public AssetStatus CurrentStatus { get; set; }
+
     public long Size { get; set; }
+
     public string Etag { get; set; }
+
     public int Version { get; set; }
-    public ICollection<Job> Jobs { get; set; } = new List<Job>();
+
+    [MaxLength(200)] public string Result { get; set; } = string.Empty;
+
+    [MaxLength(800)] public string Details { get; set; } = string.Empty;
+
+    public int Priority { get; set; }
+
     public Guid MediaPackageId { get; set; }
+
     public MediaPackage MediaPackage { get; set; }
 
     public MediaAsset(Guid mediaPackageId, string fileName)
@@ -23,13 +37,11 @@ public class MediaAsset : BaseEntity
 
     #region domains events
 
-    public void Validated()
+    public void Validated(AssetType assetType)
     {
-        CurrentState = State.Validated;
+        AssetType = assetType;
+        CurrentStatus = AssetStatus.Validated;
         UpdatedAt = DateTimeOffset.UtcNow;
-
-
-
     }
 
     public void Failed()

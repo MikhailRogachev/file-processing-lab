@@ -9,25 +9,25 @@ namespace data.Services;
 
 public class OutboxMessageBuildService(ILogger<OutboxMessageBuildService> logger) : IOutboxMessageBuilderService
 {
-    public IEnumerable<Command> Build(IEnumerable<IEvent> eventSource)
+    public IEnumerable<OutboxMessage> Build(IEnumerable<IEvent> eventSource)
     {
-        var outboxMessages = new List<Command>();
+        var outboxMessages = new List<OutboxMessage>();
 
         if (!eventSource.IsAny())
             return outboxMessages;
 
         foreach (var @event in eventSource)
         {
-            var outboxMessage = new Command
+            var outboxMessage = new OutboxMessage
             {
                 Id = @event.Id,
-                ReferenceId = @event.ReferenceId,
-                Status = CommandStatus.Queued,
+                ReferenceId = @event.AggregateId,
+                Status = OutboxMessageStatus.Queued,
                 Content = JsonSerializer.Serialize(@event, @event.GetType()),
                 ContentType = @event.GetType().FullName ?? string.Empty,
                 Repeated = 0,
                 CreatedAt = DateTimeOffset.UtcNow,
-                LastUpdatedAt = DateTime.UtcNow,
+                LastUpdatedAt = DateTimeOffset.UtcNow,
             };
             outboxMessages.Add(outboxMessage);
 

@@ -1,4 +1,5 @@
 ﻿using data.Context;
+using domain.Dtos;
 using domain.Extensions;
 using domain.Interfaces.Repository;
 using Microsoft.EntityFrameworkCore;
@@ -55,12 +56,12 @@ public class MediaPackageRepository(
     /// Generates a unique business identifier from the filename, attaches or retrieves the aggregate root, 
     /// and invokes <see cref="MediaPackage.ValidateAsset(string)"/> to attach domain events.
     /// </remarks>
-    public async Task<MediaPackage> CreateAsync(string filename, string etag, long size, CancellationToken cancellationToken)
+    public async Task<MediaPackage> CreateAsync(AssetCreateContext context, CancellationToken cancellationToken)
     {
-        if (string.IsNullOrWhiteSpace(filename))
-            throw new ArgumentException("Filename cannot be null or empty.", nameof(filename));
+        if (string.IsNullOrWhiteSpace(context.FullFileName))
+            throw new ArgumentException("Filename cannot be null or empty.", nameof(context.FullFileName));
 
-        var identifier = filename.CreateAssetIdentificator();
+        var identifier = !string.IsNullOrWhiteSpace(context.identifier) ? context.identifier : context.FullFileName.CreateAssetIdentificator();
         var package = await GetAsync(identifier, cancellationToken);
 
         if (package == null)
@@ -69,7 +70,7 @@ public class MediaPackageRepository(
             Add(package);
         }
 
-        package.ValidateAsset(filename, etag, size);
+        package.CreateAsset(context);
         return package;
     }
 

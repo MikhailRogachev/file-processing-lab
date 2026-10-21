@@ -12,8 +12,8 @@ using data.Context;
 namespace data.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20261016101358_update-allowed-types")]
-    partial class updateallowedtypes
+    [Migration("20261020100555_initial")]
+    partial class initial
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -25,112 +25,20 @@ namespace data.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
-            modelBuilder.Entity("domain.Models.Commands.Command", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<string>("Content")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("ContentType")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTimeOffset>("CreatedAt")
-                        .HasColumnType("datetimeoffset");
-
-                    b.Property<string>("ErrorMessage")
-                        .IsRequired()
-                        .HasMaxLength(800)
-                        .HasColumnType("nvarchar(800)");
-
-                    b.Property<DateTimeOffset>("LastUpdatedAt")
-                        .HasColumnType("datetimeoffset");
-
-                    b.Property<DateTimeOffset?>("ProcessedAt")
-                        .HasColumnType("datetimeoffset");
-
-                    b.Property<Guid?>("ReferenceId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<int>("Repeated")
-                        .HasColumnType("int");
-
-                    b.Property<string>("Status")
-                        .IsRequired()
-                        .HasMaxLength(20)
-                        .HasColumnType("nvarchar(20)");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("Commands");
-                });
-
-            modelBuilder.Entity("domain.Models.Jobs.Job", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<DateTimeOffset?>("CompletedDate")
-                        .HasColumnType("datetimeoffset");
-
-                    b.Property<DateTimeOffset>("CreatedAt")
-                        .HasColumnType("datetimeoffset");
-
-                    b.Property<string>("Details")
-                        .IsRequired()
-                        .HasMaxLength(800)
-                        .HasColumnType("nvarchar(800)");
-
-                    b.Property<string>("JobType")
-                        .IsRequired()
-                        .HasMaxLength(20)
-                        .HasColumnType("nvarchar(20)");
-
-                    b.Property<Guid>("MediaAssetId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<string>("Result")
-                        .IsRequired()
-                        .HasMaxLength(200)
-                        .HasColumnType("nvarchar(200)");
-
-                    b.Property<string>("State")
-                        .IsRequired()
-                        .HasMaxLength(20)
-                        .HasColumnType("nvarchar(20)");
-
-                    b.Property<string>("Task")
-                        .IsRequired()
-                        .HasMaxLength(20)
-                        .HasColumnType("nvarchar(20)");
-
-                    b.Property<DateTimeOffset?>("UpdatedAt")
-                        .HasColumnType("datetimeoffset");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("MediaAssetId");
-
-                    b.ToTable("Jobs");
-                });
-
-            modelBuilder.Entity("domain.Models.Jobs.MediaAsset", b =>
+            modelBuilder.Entity("domain.Models.Aggregates.MediaAsset", b =>
                 {
                     b.Property<Guid>("Id")
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("AssetType")
                         .IsRequired()
-                        .HasMaxLength(20)
-                        .HasColumnType("nvarchar(20)");
+                        .HasMaxLength(10)
+                        .HasColumnType("nvarchar(10)");
 
                     b.Property<DateTimeOffset>("CreatedAt")
                         .HasColumnType("datetimeoffset");
 
-                    b.Property<string>("CurrentState")
+                    b.Property<string>("CurrentStatus")
                         .IsRequired()
                         .HasMaxLength(20)
                         .HasColumnType("nvarchar(20)");
@@ -175,7 +83,7 @@ namespace data.Migrations
                     b.ToTable("MediaAssets");
                 });
 
-            modelBuilder.Entity("domain.Models.Jobs.MediaPackage", b =>
+            modelBuilder.Entity("domain.Models.Aggregates.MediaPackage", b =>
                 {
                     b.Property<Guid>("Id")
                         .HasColumnType("uniqueidentifier");
@@ -183,25 +91,10 @@ namespace data.Migrations
                     b.Property<DateTimeOffset>("CreatedAt")
                         .HasColumnType("datetimeoffset");
 
-                    b.Property<string>("Details")
-                        .IsRequired()
-                        .HasMaxLength(800)
-                        .HasColumnType("nvarchar(800)");
-
                     b.Property<string>("Identifier")
                         .IsRequired()
                         .HasMaxLength(500)
                         .HasColumnType("nvarchar(500)");
-
-                    b.Property<string>("Result")
-                        .IsRequired()
-                        .HasMaxLength(200)
-                        .HasColumnType("nvarchar(200)");
-
-                    b.Property<string>("State")
-                        .IsRequired()
-                        .HasMaxLength(10)
-                        .HasColumnType("nvarchar(10)");
 
                     b.Property<DateTimeOffset?>("UpdatedAt")
                         .HasColumnType("datetimeoffset");
@@ -212,6 +105,49 @@ namespace data.Migrations
                         .IsUnique();
 
                     b.ToTable("MediaPackages");
+                });
+
+            modelBuilder.Entity("domain.Models.Outbox.OutboxMessage", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Content")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("ContentType")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<string>("ErrorMessage")
+                        .IsRequired()
+                        .HasMaxLength(800)
+                        .HasColumnType("nvarchar(800)");
+
+                    b.Property<DateTimeOffset>("LastUpdatedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<DateTimeOffset?>("ProcessedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<Guid?>("ReferenceId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<int>("Repeated")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("OutboxMessages");
                 });
 
             modelBuilder.Entity("domain.Models.References.AllowedFileType", b =>
@@ -252,20 +188,9 @@ namespace data.Migrations
                     b.ToTable("AllowedFileTypes");
                 });
 
-            modelBuilder.Entity("domain.Models.Jobs.Job", b =>
+            modelBuilder.Entity("domain.Models.Aggregates.MediaAsset", b =>
                 {
-                    b.HasOne("domain.Models.Jobs.MediaAsset", "MediaAsset")
-                        .WithMany("Jobs")
-                        .HasForeignKey("MediaAssetId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("MediaAsset");
-                });
-
-            modelBuilder.Entity("domain.Models.Jobs.MediaAsset", b =>
-                {
-                    b.HasOne("domain.Models.Jobs.MediaPackage", "MediaPackage")
+                    b.HasOne("domain.Models.Aggregates.MediaPackage", "MediaPackage")
                         .WithMany("Assets")
                         .HasForeignKey("MediaPackageId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -274,12 +199,7 @@ namespace data.Migrations
                     b.Navigation("MediaPackage");
                 });
 
-            modelBuilder.Entity("domain.Models.Jobs.MediaAsset", b =>
-                {
-                    b.Navigation("Jobs");
-                });
-
-            modelBuilder.Entity("domain.Models.Jobs.MediaPackage", b =>
+            modelBuilder.Entity("domain.Models.Aggregates.MediaPackage", b =>
                 {
                     b.Navigation("Assets");
                 });

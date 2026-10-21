@@ -34,7 +34,7 @@ public class SqsListener(
                     continue;
                 }
 
-                var messagesPublished = new List<QueueMessageConsumed>();
+                var messagesPublished = new List<MessageConsumed>();
 
                 foreach (var message in messages)
                 {
@@ -42,42 +42,45 @@ public class SqsListener(
                     {
                         if (message.EventName == FieldNames.UpdatedEventName)
                         {
-                            var handler = scope.ServiceProvider.GetRequiredService<IEventHandler<FileUpdatedEvent>>();
-                            await handler.HandleAsync(new FileUpdatedEvent(
+                            var handler = scope.ServiceProvider.GetRequiredService<IEventHandler<FileIngestedEvent>>();
+                            await handler.HandleAsync(new FileIngestedEvent(
                                 Guid.NewGuid(),
                                 Guid.NewGuid(),
                                 DateTimeOffset.UtcNow,
-                                message.ObjectKey,
+                                message.Identifier,
                                 message.Bucket,
-                                message.ObjectSize,
+                                message.FullFileName,
+                                message.FileSize,
+                                message.Priority,
                                 message.Etag), stoppingToken);
 
-                            logger.LogDebug("Published message 'FileChanged' for the file {fn}", message.ObjectKey);
+                            logger.LogDebug("Published message 'FileChanged' for the file {fn}", message.FullFileName);
                         }
-                        else if (message.EventName == FieldNames.DeletedEventName)
-                        {
-                            var handler = scope.ServiceProvider.GetRequiredService<IEventHandler<FileDeletedEvent>>();
-                            await handler.HandleAsync(new FileDeletedEvent(
-                                Guid.NewGuid(),
-                                Guid.NewGuid(),
-                                DateTimeOffset.UtcNow,
-                                message.ObjectKey,
-                                message.Bucket), stoppingToken);
+                        //else if (message.EventName == FieldNames.DeletedEventName)
+                        //{
+                        //    var handler = scope.ServiceProvider.GetRequiredService<IEventHandler<FileDeletedEvent>>();
+                        //    await handler.HandleAsync(new FileDeletedEvent(
+                        //        Guid.NewGuid(),
+                        //        Guid.NewGuid(),
+                        //        DateTimeOffset.UtcNow,
+                        //        message.ObjectKey,
+                        //        message.Bucket), stoppingToken);
 
-                            logger.LogDebug("Published message 'FileDeleted' for the file {fn}", message.ObjectKey);
-                        }
-                        else
-                        {
-                            logger.LogDebug("The event received is not defined.");
-                        }
+                        //    logger.LogDebug("Published message 'FileDeleted' for the file {fn}", message.ObjectKey);
+                        //}
+                        //else
+                        //{
+                        //    logger.LogDebug("The event received is not defined.");
+                        //}
 
                         messagesPublished.Add(message);
                     }
                     catch (Exception ex)
                     {
-                        logger.LogError(ex, "Failed to publish RabbitMQ event {en} for the file {fn}",
+                        logger.LogError(ex, "Failed to publish RabbitMQ event {en} for the file {fn} with the identifier {id}",
                             message.EventName,
-                            message.ObjectKey);
+                            message.FullFileName,
+                            message.Identifier);
 
                     }
                 }

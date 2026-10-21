@@ -7,4 +7,4 @@
 /// <param name="ReferenceId"></param>
 /// <param name="CreatedAt"></param>
 /// <param name="FileName"></param>
-public record ValidateMediaAssetEvent(Guid Id, Guid ReferenceId, DateTimeOffset CreatedAt, string FileName) : IEvent;
+public record ValidateMediaAssetEvent(Guid Id, Guid AggregateId, DateTimeOffset CreatedAt, string FileName) : IEvent;

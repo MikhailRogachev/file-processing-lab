@@ -5,25 +5,24 @@
 namespace data.Migrations
 {
     /// <inheritdoc />
-    public partial class addedassetcurrentstate : Migration
+    public partial class addpriorityfield : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.AddColumn<string>(
-                name: "CurrentState",
+            migrationBuilder.AddColumn<int>(
+                name: "Priority",
                 table: "MediaAssets",
-                type: "nvarchar(20)",
-                maxLength: 20,
+                type: "int",
                 nullable: false,
-                defaultValue: "");
+                defaultValue: 0);
         }
 
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropColumn(
-                name: "CurrentState",
+                name: "Priority",
                 table: "MediaAssets");
         }
     }

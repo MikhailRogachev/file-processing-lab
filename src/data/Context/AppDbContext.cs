@@ -25,8 +25,7 @@ public class AppDbContext : DbContext, IUnitOfWork
 
     public DbSet<MediaPackage> MediaPackages => Set<MediaPackage>();
     public DbSet<MediaAsset> MediaAssets => Set<MediaAsset>();
-    public DbSet<Job> Jobs => Set<Job>();
-    public DbSet<Command> Commands => Set<Command>();
+    public DbSet<OutboxMessage> OutboxMessages => Set<OutboxMessage>();
     public DbSet<AllowedFileType> AllowedFileTypes => Set<AllowedFileType>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -37,7 +36,6 @@ public class AppDbContext : DbContext, IUnitOfWork
         {
             entity.Property(e => e.Id).ValueGeneratedNever();
             entity.Property(e => e.Identifier).HasMaxLength(500).IsRequired();
-            entity.Property(e => e.State).HasConversion(new EnumToStringConverter<HealthState>()).HasMaxLength(10);
 
             entity.HasIndex(e => e.Identifier).IsUnique();
             entity.HasMany(e => e.Assets)
@@ -50,30 +48,17 @@ public class AppDbContext : DbContext, IUnitOfWork
         {
             entity.Property(e => e.Id).ValueGeneratedNever();
             entity.Property(e => e.Filename).HasMaxLength(550).IsRequired();
-            entity.Property(e => e.AssetType).HasConversion(new EnumToStringConverter<AssetType>()).HasMaxLength(20);
-            entity.Property(e => e.CurrentState).HasConversion(new EnumToStringConverter<State>()).HasMaxLength(20);
+            entity.Property(e => e.AssetType).HasConversion(new EnumToStringConverter<AssetType>()).HasMaxLength(10);
+            entity.Property(e => e.CurrentStatus).HasConversion(new EnumToStringConverter<AssetStatus>()).HasMaxLength(20);
             entity.Property(e => e.Etag).HasMaxLength(100);
 
             entity.HasIndex(e => new { e.MediaPackageId, e.Filename }).IsUnique();
-            entity.HasMany(e => e.Jobs)
-                .WithOne(j => j.MediaAsset)
-                .HasForeignKey(j => j.MediaAssetId)
-                .OnDelete(DeleteBehavior.Cascade);
-
         });
 
-        modelBuilder.Entity<Job>(entity =>
+        modelBuilder.Entity<OutboxMessage>(entity =>
         {
             entity.Property(e => e.Id).ValueGeneratedNever();
-            entity.Property(e => e.State).HasConversion(new EnumToStringConverter<State>()).HasMaxLength(20);
-            entity.Property(e => e.JobType).HasConversion(new EnumToStringConverter<JobType>()).HasMaxLength(20);
-            entity.Property(e => e.Task).HasConversion(new EnumToStringConverter<JobTask>()).HasMaxLength(20);
-        });
-
-        modelBuilder.Entity<Command>(entity =>
-        {
-            entity.Property(e => e.Id).ValueGeneratedNever();
-            entity.Property(e => e.Status).HasConversion(new EnumToStringConverter<CommandStatus>()).HasMaxLength(20);
+            entity.Property(e => e.Status).HasConversion(new EnumToStringConverter<OutboxMessageStatus>()).HasMaxLength(20);
             entity.Property(e => e.ErrorMessage).HasMaxLength(800);
         });
 
@@ -112,7 +97,7 @@ public class AppDbContext : DbContext, IUnitOfWork
         var messages = _outboxMessageBuilderService.Build(pendingCommands);
 
         foreach (var message in messages)
-            Commands.Add(message);
+            OutboxMessages.Add(message);
     }
 
     private void CleanPendings()
